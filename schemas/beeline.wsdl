@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Revision: 1.2 $ -->
+<wsdl:definitions xmlns="http://payment.beepayxp.jetinfosoft.ru" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:pt="http://payment.beepayxp.jetinfosoft.ru" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://payment.beepayxp.jetinfosoft.ru">
+  <wsdl:types>
+    <xs:schema targetNamespace="http://payment.beepayxp.jetinfosoft.ru" elementFormDefault="qualified">
+      <!--           <xs:import namespace="http://payment.beepayxp.jetinfosoft.ru" schemaLocation="PaymentTypes.xsd"/>
+  -->
+      <!-- Wrapping XMLSchema's dateTime type -->
+      <xs:simpleType name="dateTime">
+        <xs:restriction base="xs:string"/>
+      </xs:simpleType>
+      <!-- ID type, which reflects Oracle's number(20) type -->
+      <xs:simpleType name="id">
+        <xs:restriction base="xs:unsignedLong">
+          <xs:minInclusive value="0"/>
+          <xs:maxInclusive value="18446744073709551615"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <!-- ID type, which reflects Oracle's number(6) type-->
+      <xs:simpleType name="shortId">
+        <xs:restriction base="xs:unsignedInt">
+          <xs:minInclusive value="0"/>
+          <xs:maxInclusive value="999999"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="phoneNumber">
+        <xs:restriction base="xs:string">
+          <xs:pattern value="[0-9]{10}"/>
+          <xs:length value="10" fixed="true"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="shortString">
+        <xs:restriction base="xs:string">
+          <xs:pattern value="[!-~]{1,20}"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="statusCode">
+        <xs:restriction base="xs:short">
+          <xs:minInclusive value="-999"/>
+          <xs:maxInclusive value="999"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="percentAmount">
+        <xs:restriction base="xs:unsignedInt">
+          <xs:minInclusive value="0"/>
+          <xs:maxInclusive value="999999"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="currencyAmount">
+        <xs:restriction base="xs:unsignedLong">
+          <xs:minInclusive value="0"/>
+          <xs:maxInclusive value="2147483647"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="currencyCode">
+        <xs:restriction base="xs:string">
+          <xs:length value="3" fixed="true"/>
+          <xs:enumeration value="RUR"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:complexType name="currency">
+        <xs:attribute name="amount" use="required" type="currencyAmount"/>
+        <xs:attribute name="code" use="required" type="currencyCode"/>
+      </xs:complexType>
+      <xs:complexType name="currencyWithOptionalCode">
+        <xs:attribute name="amount" use="required" type="currencyAmount"/>
+        <xs:attribute name="code" use="optional" type="currencyCode"/>
+      </xs:complexType>
+      <xs:simpleType name="errorCode">
+        <xs:restriction base="xs:short">
+          <xs:minInclusive value="-999"/>
+          <xs:maxInclusive value="999"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:complexType name="error">
+        <xs:attribute name="error" type="errorCode"/>
+      </xs:complexType>
+      <xs:complexType name="paymentRequest">
+        <xs:sequence>
+          <xs:element name="partnerId" type="shortId"/>
+          <xs:element name="subagentId" type="shortId" minOccurs="0"/>
+          <xs:element name="paymentPointId" type="shortString"/>
+          <xs:element name="rewardPercent" type="percentAmount" minOccurs="0"/>
+          <xs:element name="money" type="currency"/>
+          <xs:element name="phone" type="phoneNumber" minOccurs="0"/>
+          <xs:element name="paymentDestination" type="shortString" minOccurs="0"/>
+          <xs:element name="paymentDestinationType" type="shortId" minOccurs="0"/>
+          <xs:element name="discountCardNumber" type="xs:string" minOccurs="0"/>
+          <xs:element name="amountAll" type="currency" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="paymentTime" use="required" type="dateTime"/>
+        <xs:attribute name="externalId" use="required" type="id"/>
+      </xs:complexType>
+      <xs:complexType name="registeredPayment">
+        <xs:sequence>
+          <xs:element name="partnerId" type="shortId"/>
+          <xs:element name="subagentId" type="shortId" minOccurs="0"/>
+          <xs:element name="paymentPointId" type="shortString"/>
+          <xs:element name="rewardPercent" type="percentAmount" minOccurs="0"/>
+          <xs:element name="money" type="currency"/>
+          <xs:element name="phone" type="phoneNumber" minOccurs="0"/>
+          <xs:element name="paymentDestination" type="shortString" minOccurs="0"/>
+          <xs:element name="paymentDestinationType" type="shortId" minOccurs="0"/>
+          <xs:element name="discountCardNumber" type="xs:string" minOccurs="0"/>
+          <xs:element name="amountAll" type="currency" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="paymentTime" use="required" type="dateTime"/>
+        <xs:attribute name="externalId" use="required" type="id"/>
+        <xs:attribute name="registeredId" use="required" type="id"/>
+      </xs:complexType>
+      <xs:complexType name="registeredPaymentResponse">
+        <xs:sequence>
+          <xs:element name="partnerId" type="shortId"/>
+          <xs:element name="subagentId" type="shortId" minOccurs="0"/>
+          <xs:element name="paymentPointId" type="shortString"/>
+          <xs:element name="rewardPercent" type="percentAmount" minOccurs="0"/>
+          <xs:element name="money" type="currency"/>
+          <xs:element name="phone" type="phoneNumber" minOccurs="0"/>
+          <xs:element name="paymentDestination" type="shortString" minOccurs="0"/>
+          <xs:element name="paymentDestinationType" type="shortId" minOccurs="0"/>
+          <xs:element name="discountCardNumber" type="xs:string" minOccurs="0"/>
+          <xs:element name="amountAll" type="currencyWithOptionalCode" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="paymentTime" use="required" type="dateTime"/>
+        <xs:attribute name="externalId" use="required" type="id"/>
+        <xs:attribute name="registeredId" use="required" type="id"/>
+      </xs:complexType>
+      <xs:complexType name="reconciliationPayment">
+        <xs:sequence>
+          <xs:element name="subagentId" type="shortId" minOccurs="0"/>
+          <xs:element name="paymentPointId" type="shortString"/>
+          <xs:element name="rewardPercent" type="percentAmount" minOccurs="0"/>
+          <xs:element name="money" type="currency"/>
+          <xs:element name="phone" type="phoneNumber" minOccurs="0"/>
+          <xs:element name="paymentDestination" type="shortString" minOccurs="0"/>
+          <xs:element name="paymentDestinationType" type="shortId" minOccurs="0"/>
+          <xs:element name="discountCardNumber" type="xs:string" minOccurs="0"/>
+          <xs:element name="amountAll" type="currency" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="paymentTime" use="required" type="dateTime"/>
+        <xs:attribute name="externalId" use="required" type="id"/>
+        <xs:attribute name="registeredId" use="required" type="id"/>
+      </xs:complexType>
+      <xs:complexType name="paymentResponse">
+        <xs:choice>
+          <xs:element name="error" type="error"/>
+          <xs:element name="registeredPayment" type="registeredPaymentResponse"/>
+        </xs:choice>
+      </xs:complexType>
+      <xs:complexType name="reconciliationRequest">
+        <xs:sequence>
+          <xs:element name="partnerId" type="shortId"/>
+          <xs:element name="paymentsList" type="paymentsList"/>
+        </xs:sequence>
+        <xs:attribute name="startTime" type="dateTime" use="required"/>
+        <xs:attribute name="endTime" type="dateTime" use="required"/>
+        <xs:attribute name="operatorId" type="shortId" use="optional"/>
+      </xs:complexType>
+      <xs:complexType name="paymentsList">
+        <xs:sequence>
+          <xs:element name="reconciliationPayment" type="reconciliationPayment" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="reconciliationResponse">
+        <xs:choice>
+          <xs:element name="error" type="error"/>
+          <xs:element name="reconciliationId" type="id"/>
+        </xs:choice>
+      </xs:complexType>
+      <xs:complexType name="reconciliationStatusRequest">
+        <xs:sequence>
+          <xs:element name="partnerId" type="shortId"/>
+          <xs:element name="reconciliationId" type="id"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="reconciliationStatusResponse">
+        <xs:choice>
+          <xs:element name="error" type="error"/>
+          <xs:element name="statusesList" type="statusesList"/>
+        </xs:choice>
+      </xs:complexType>
+      <xs:complexType name="statusesList">
+        <xs:sequence>
+          <xs:element name="paymentStatus" type="paymentStatus" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="paymentStatus">
+        <xs:attribute name="paymentId" type="id"/>
+        <xs:attribute name="status" type="statusCode"/>
+      </xs:complexType>
+      <xs:complexType name="digitalSignature">
+        <xs:sequence>
+          <xs:element name="signature" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="batchPayment">
+        <xs:sequence>
+          <xs:element name="subagentId" type="shortId" minOccurs="0"/>
+          <xs:element name="paymentPointId" type="shortString"/>
+          <xs:element name="rewardPercent" type="percentAmount" minOccurs="0"/>
+          <xs:element name="money" type="currency"/>
+          <xs:element name="phone" type="phoneNumber" minOccurs="0"/>
+          <xs:element name="paymentDestination" type="shortString" minOccurs="0"/>
+          <xs:element name="paymentDestinationType" type="shortId" minOccurs="0"/>
+          <xs:element name="discountCardNumber" type="xs:string" minOccurs="0"/>
+          <xs:element name="amountAll" type="currency" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="paymentTime" use="required" type="dateTime"/>
+        <xs:attribute name="externalId" use="required" type="id"/>
+      </xs:complexType>
+      <xs:complexType name="batchPaymentList">
+        <xs:sequence>
+          <xs:element name="items" type="batchPayment" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="batchPaymentRequest">
+        <xs:sequence>
+          <xs:element name="partnerId" use="required" type="shortId"/>
+          <xs:element name="externalBatchId" use="required" type="id"/>
+          <xs:element name="batchPaymentList" type="batchPaymentList"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="batchPaymentResponse">
+        <xs:sequence>
+          <xs:element name="error" type="error"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="batchPaymentStatusRequest">
+        <xs:sequence>
+          <xs:element name="partnerId" type="shortId"/>
+          <xs:element name="externalBatchId" type="id"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="batchPD">
+        <xs:sequence>
+          <xs:element name="paymentId" type="id"/>
+          <xs:element name="paymentTime" type="dateTime"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="batchPI">
+        <xs:choice>
+          <xs:element name="error" type="error"/>
+          <xs:element name="batchPD" type="batchPD"/>
+        </xs:choice>
+      </xs:complexType>
+      <xs:complexType name="batchPIList">
+        <xs:sequence>
+          <xs:element name="items" type="batchPI" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="batchPaymentStatusResponse">
+        <xs:choice>
+          <xs:element name="batchPIList" type="batchPIList"/>
+          <xs:element name="error" type="error"/>
+        </xs:choice>
+      </xs:complexType>
+
+      <xs:complexType name="partnerCancelPayment">
+        <xs:sequence>
+          <xs:element name="partnerId" type="shortId"/>
+        </xs:sequence>
+        <xs:attribute name="paymentTime" use="required" type="dateTime"/>
+        <xs:attribute name="externalId" use="required" type="id"/>
+        <xs:attribute name="registeredId" use="required" type="id"/>
+      </xs:complexType>
+      <xs:complexType name="partnerCancelPaymentStatus">
+        <xs:sequence>
+          <xs:element name="partnerCancelPayment" type="partnerCancelPayment"/>
+        </xs:sequence>
+        <xs:attribute name="status" use="required" type="statusCode"/>
+        <xs:attribute name="reason" use="required" type="shortId"/>
+      </xs:complexType>
+      <xs:complexType name="partnerCancelPaymentRequest">
+        <xs:sequence>
+          <xs:element name="partnerId" type="shortId"/>
+          <xs:element name="money" type="currency"/>
+          <xs:element name="phone" type="phoneNumber" minOccurs="0"/>
+          <xs:element name="paymentDestination" type="shortString" minOccurs="0"/>
+          <xs:element name="paymentDestinationType" type="shortId" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="paymentTime" use="required" type="dateTime"/>
+        <xs:attribute name="externalId" use="required" type="id"/>
+        <xs:attribute name="registeredId" use="required" type="id"/>
+      </xs:complexType>
+      <xs:complexType name="partnerCancelPaymentResponse">
+        <xs:choice>
+          <xs:element name="partnerCancelPaymentStatus" type="partnerCancelPaymentStatus"/>
+          <xs:element name="error" type="error"/>
+        </xs:choice>
+      </xs:complexType>
+      <xs:complexType name="partnerCancelPaymentStatusRequest">
+        <xs:sequence>
+          <xs:element name="partnerCancelPayment" type="partnerCancelPayment"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="partnerCancelPaymentStatusResponse">
+        <xs:choice>
+          <xs:element name="partnerCancelPaymentStatus" type="partnerCancelPaymentStatus"/>
+          <xs:element name="error" type="error"/>
+        </xs:choice>
+      </xs:complexType>
+
+
+      <xs:element name="immediatePaymentRequest" type="pt:paymentRequest"/>
+      <xs:element name="createPaymentRequest" type="pt:paymentRequest"/>
+      <xs:element name="paymentResponse" type="pt:paymentResponse"/>
+      <xs:element name="digitalSignature" type="pt:digitalSignature"/>
+      <xs:element name="registeredPayment" type="pt:registeredPayment"/>
+      <xs:element name="registeredPaymentResponse" type="pt:registeredPaymentResponse"/>
+      <xs:element name="reconciliationRequest" type="pt:reconciliationRequest"/>
+      <xs:element name="reconciliationResponse" type="pt:reconciliationResponse"/>
+      <xs:element name="reconciliationStatusRequest" type="pt:reconciliationStatusRequest"/>
+      <xs:element name="reconciliationStatusResponse" type="pt:reconciliationStatusResponse"/>
+      <xs:element name="batchPaymentRequest" type="pt:batchPaymentRequest"/>
+      <xs:element name="batchPaymentResponse" type="pt:batchPaymentResponse"/>
+      <xs:element name="batchPaymentStatusRequest" type="pt:batchPaymentStatusRequest"/>
+      <xs:element name="batchPaymentStatusResponse" type="pt:batchPaymentStatusResponse"/>
+
+      <xs:element name="partnerCancelPaymentRequest" type="pt:partnerCancelPaymentRequest"/>
+      <xs:element name="partnerCancelPaymentResponse" type="pt:partnerCancelPaymentResponse"/>
+      <xs:element name="partnerCancelPaymentStatusRequest" type="pt:partnerCancelPaymentStatusRequest"/>
+      <xs:element name="partnerCancelPaymentStatusResponse" type="pt:partnerCancelPaymentStatusResponse"/>
+
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="immediatePaymentRequest">
+    <wsdl:part name="request" element="immediatePaymentRequest"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="immediatePaymentResponse">
+    <wsdl:part name="response" element="paymentResponse"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="createPaymentRequest">
+    <wsdl:part name="request" element="createPaymentRequest"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="createPaymentResponse">
+    <wsdl:part name="response" element="paymentResponse"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="confirmPaymentRequest">
+    <wsdl:part name="request" element="registeredPayment"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="confirmPaymentResponse">
+    <wsdl:part name="response" element="paymentResponse"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="registerTransferRequest">
+    <wsdl:part name="request" element="reconciliationRequest"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="registerTransferResponse">
+    <wsdl:part name="response" element="reconciliationResponse"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="registerStatusRequest">
+    <wsdl:part name="request" element="reconciliationStatusRequest"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="registerStatusResponse">
+    <wsdl:part name="response" element="reconciliationStatusResponse"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="batchPaymentRequest">
+    <wsdl:part name="request" element="batchPaymentRequest"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="batchPaymentResponse">
+    <wsdl:part name="response" element="batchPaymentResponse"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="batchPaymentStatusRequest">
+    <wsdl:part name="request" element="batchPaymentStatusRequest"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="batchPaymentStatusResponse">
+    <wsdl:part name="response" element="batchPaymentStatusResponse"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="partnerCancelPaymentRequest">
+    <wsdl:part name="request" element="partnerCancelPaymentRequest"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="partnerCancelPaymentResponse">
+    <wsdl:part name="response" element="partnerCancelPaymentResponse"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="partnerCancelPaymentStatusRequest">
+    <wsdl:part name="request" element="partnerCancelPaymentStatusRequest"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:message name="partnerCancelPaymentStatusResponse">
+    <wsdl:part name="response" element="partnerCancelPaymentStatusResponse"/>
+    <wsdl:part name="signature" element="digitalSignature"/>
+  </wsdl:message>
+  <wsdl:portType name="PaymentGate">
+    <wsdl:operation name="immediatePayment">
+      <wsdl:input message="pt:immediatePaymentRequest"/>
+      <wsdl:output message="pt:immediatePaymentResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="createPayment">
+      <wsdl:input message="pt:createPaymentRequest"/>
+      <wsdl:output message="pt:createPaymentResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="confirmPayment">
+      <wsdl:input message="pt:confirmPaymentRequest"/>
+      <wsdl:output message="pt:confirmPaymentResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="registerTransfer">
+      <wsdl:input message="pt:registerTransferRequest"/>
+      <wsdl:output message="pt:registerTransferResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="registerStatus">
+      <wsdl:input message="pt:registerStatusRequest"/>
+      <wsdl:output message="pt:registerStatusResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="batchPayment">
+      <wsdl:input message="pt:batchPaymentRequest"/>
+      <wsdl:output message="pt:batchPaymentResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="batchPaymentStatus">
+      <wsdl:input message="pt:batchPaymentStatusRequest"/>
+      <wsdl:output message="pt:batchPaymentStatusResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="partnerCancelPayment">
+      <wsdl:input message="pt:partnerCancelPaymentRequest"/>
+      <wsdl:output message="pt:partnerCancelPaymentResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="partnerCancelPaymentStatus">
+      <wsdl:input message="pt:partnerCancelPaymentStatusRequest"/>
+      <wsdl:output message="pt:partnerCancelPaymentStatusResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PaymentGateSoapBinding" type="PaymentGate">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="immediatePayment">
+      <soap:operation soapAction="http://payment.beepayxp.jetinfosoft.ru/immediatePayment"/>
+      <wsdl:input>
+        <soap:header message="immediatePaymentRequest" part="signature" use="literal"/>
+        <soap:body parts="request" use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="immediatePaymentResponse" part="signature" use="literal"/>
+        <soap:body parts="response" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createPayment">
+      <soap:operation soapAction="http://payment.beepayxp.jetinfosoft.ru/createPayment"/>
+      <wsdl:input>
+        <soap:header message="createPaymentRequest" part="signature" use="literal"/>
+        <soap:body parts="request" use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="createPaymentResponse" part="signature" use="literal"/>
+        <soap:body parts="response" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="confirmPayment">
+      <soap:operation soapAction="http://payment.beepayxp.jetinfosoft.ru/confirmPayment" style="document"/>
+      <wsdl:input>
+        <soap:header message="confirmPaymentRequest" part="signature" use="literal"/>
+        <soap:body parts="request" use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="confirmPaymentResponse" part="signature" use="literal"/>
+        <soap:body parts="response" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="registerTransfer">
+      <soap:operation soapAction="http://payment.beepayxp.jetinfosoft.ru/registerTransfer"/>
+      <wsdl:input>
+        <soap:header message="registerTransferRequest" part="signature" use="literal"/>
+        <soap:body parts="request" use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="registerTransferResponse" part="signature" use="literal"/>
+        <soap:body parts="response" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="registerStatus">
+      <soap:operation soapAction="http://payment.beepayxp.jetinfosoft.ru/registerStatus"/>
+      <wsdl:input>
+        <soap:header message="registerStatusRequest" part="signature" use="literal"/>
+        <soap:body parts="request" use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="registerStatusResponse" part="signature" use="literal"/>
+        <soap:body parts="response" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="batchPayment">
+      <soap:operation soapAction="http://payment.beepayxp.jetinfosoft.ru/batchPayment"/>
+      <wsdl:input>
+        <soap:header message="batchPaymentRequest" part="signature" use="literal"/>
+        <soap:body parts="request" use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="batchPaymentResponse" part="signature" use="literal"/>
+        <soap:body parts="response" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="batchPaymentStatus">
+      <soap:operation soapAction="http://payment.beepayxp.jetinfosoft.ru/batchPaymentStatus"/>
+      <wsdl:input>
+        <soap:header message="batchPaymentStatusRequest" part="signature" use="literal"/>
+        <soap:body parts="request" use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="batchPaymentStatusResponse" part="signature" use="literal"/>
+        <soap:body parts="response" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="partnerCancelPayment">
+      <soap:operation soapAction="http://payment.beepayxp.jetinfosoft.ru/partnerCancelPayment"/>
+      <wsdl:input>
+        <soap:header message="partnerCancelPaymentRequest" part="signature" use="literal"/>
+        <soap:body parts="request" use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="partnerCancelPaymentResponse" part="signature" use="literal"/>
+        <soap:body parts="response" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="partnerCancelPaymentStatus">
+      <soap:operation soapAction="http://payment.beepayxp.jetinfosoft.ru/partnerCancelPaymentStatus"/>
+      <wsdl:input>
+        <soap:header message="partnerCancelPaymentStatusRequest" part="signature" use="literal"/>
+        <soap:body parts="request" use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="partnerCancelPaymentStatusResponse" part="signature" use="literal"/>
+        <soap:body parts="response" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+</wsdl:definitions>
