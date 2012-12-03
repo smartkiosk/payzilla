@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.version       = Payzilla::VERSION
   gem.authors       = ["Boris Staal"]
   gem.email         = ["boris@roundlake.ru"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{Payzilla}
+  gem.summary       = %q{Payzilla}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($/)
