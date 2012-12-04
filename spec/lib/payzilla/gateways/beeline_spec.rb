@@ -23,7 +23,9 @@ describe Payzilla::Gateways::Beeline do
         :account => x,
         :created_at => @date,
         :enrolled_amount => 100,
-        :paid_amount => 100
+        :paid_amount => 100,
+        :discount_card => 1111222233334444,
+        :subagent_id => 1
       )
     end
 
@@ -32,6 +34,10 @@ describe Payzilla::Gateways::Beeline do
 
   it "checks" do
     @transport.check(@payments.first)[:success].should == true
+  end
+
+  it "pays" do
+    @transport.pay(@payments.first)[:success].should == true
   end
 
   it "generates revision" do

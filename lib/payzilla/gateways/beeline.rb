@@ -12,21 +12,23 @@ module Payzilla
       def check(payment)
         begin
           result = request :create_payment,
-            :paymentRequest => {
+            {
               :partnerId      => @config.setting_partner_id,
               :paymentPointId => @config.setting_payment_point_id,
-              :money => {
-                :amount => payment.enrolled_amount,
-                :code   => 'RUR'
-              },
-              :amountAll => {
-                :amount => payment.paid_amount,
-                :code => 'RUR'
-              },
+              :money => "",
               :phone       => payment.account,
-              :paymentTime => payment.created_at,
-              :externalId  => payment.id
-            }
+              :amountAll => "",
+              :attributes! => {
+                :money => {
+                  :amount => payment.enrolled_amount,
+                  :code   => 'RUR'
+                },
+                :amountAll => {
+                  :amount => payment.paid_amount,
+                  :code => 'RUR'
+                }
+              }
+            }, payment
 
           return retval(result.to_hash[:paymentResponse][:error][:error])
         rescue Errno::ECONNRESET
@@ -38,22 +40,22 @@ module Payzilla
         return retval(-1001) if settings_miss?
 
         begin
-          result = request :immediatePayment,
-            :paymentRequest => {
+          result = request :immediate_payment,
+            {
               :partnerId      => @config.setting_partner_id,
+              :subagentId     => payment.subagent_id,
               :paymentPointId => @config.setting_payment_point_id,
-              :money => {
-                :amount => payment.enrolled_amount,
-                :code   => 'RUR'
-              },
-              :amountAll => {
-                :amount => payment.paid_amount,
-                :code => 'RUR'
-              },
+              :money => "",
               :phone       => payment.account,
-              :paymentTime => payment.created_at,
-              :externalId  => payment.id
-            }
+              :discountCardNumber => payment.discount_card,
+
+              :attributes! => {
+                :money => {
+                  :amount => payment.enrolled_amount,
+                  :code   => 'RUR'
+                }
+              }
+            }, payment
 
           return retval(result.to_hash[:paymentResponse][:error][:error])
         rescue Errno::ECONNRESET
@@ -98,7 +100,7 @@ module Payzilla
           }
         }
 
-        [:json, ::JSON.generate(data)]    
+        [:json, ::JSON.generate(data)]
       end
 
       def send_revision(revision, data)
@@ -115,7 +117,7 @@ module Payzilla
     private
 
       def settings_miss?
-        @config.setting_partner_id.blank?       || 
+        @config.setting_partner_id.blank?       ||
         @config.setting_payment_point_id.blank? ||
         @config.attachment_cert.blank?          ||
         @config.attachment_key.blank?           ||
@@ -130,7 +132,8 @@ module Payzilla
         "123"
       end
 
-      def request(method, params)
+      def request(method, params, payment=nil)
+        Savon.config.env_namespace = :soap
         client = Savon.client @config.attachment_wsdl.path
         client.wsdl.endpoint = @config.setting_url
 
@@ -138,11 +141,23 @@ module Payzilla
           config.logger = logger
 
           http.auth.ssl.verify_mode = :none
-
+          soap.element_form_default = :unqualified
+          soap.namespaces.delete("xmlns:ins0")
+          soap.namespaces.delete("xmlns:pt")
+          soap.input = [
+            "#{method.to_s.lower_camelcase}Request", {
+              :paymentTime => payment.created_at.strftime("%Y-%m-%dT%H:%M:%SZ%:z"),
+              :externalId => payment.id,
+              :xmlns => "http://payment.beepayxp.jetinfosoft.ru"
+            }
+          ]
           soap.body   = params
           soap.header = {
             :digitalSignature => {
               :signature => sign_request(soap.send :body_to_xml)
+            },
+            :attributes! => {
+              :digitalSignature => {:xmlns => "http://payment.beepayxp.jetinfosoft.ru"}
             }
           }
         end
