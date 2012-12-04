@@ -172,7 +172,7 @@ module Payzilla
   xmlns="http://schema.mts.ru/ESPP/AgentPayments/Protocol/Messages/v5_01"
   xmlns:espp-constraints="http://schema.mts.ru/ESPP/Core/Constraints/v5_01"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://schema.mts.ru/ESPP/AgentPayments/Protocol/Messages/v5_01 ESPP_AgentPayments_Protocol_Messages_v5_01.xsd">
+  xsi:schemaLocation="http://schema.mts.ru/ESPP/AgentPayments/Protocol/Messages/v5_01 ESPP_AgentPayments_Protocol_Messages_v5_01.xsd" #{"a_01 = \"60\"" if operation == "ESPP_0104010"}>
   #{xml}
 </#{operation}>
         XML
