@@ -4,6 +4,7 @@ require 'payzilla/revision'
 require 'payzilla/gateways'
 require 'payzilla/transports/http'
 require 'payzilla/utils/string_file'
+require 'encoding/converter.rb'
 
 Dir["#{File.dirname(__FILE__)}/payzilla/gateways/*.rb"].each do |gateway|
   begin
