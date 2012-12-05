@@ -45,4 +45,9 @@ describe Payzilla::Gateways::Beeline do
 
     data['reconciliationRequest']['partnerId'].should == '939'
   end
+
+  it "revises" do
+    data = @transport.generate_revision(@revision)[3]
+    @transport.send_revision(data, :start_time => "2006-03-05T12:11:57Z+03:00", :end_time => "2006-03-05T12:11:57Z+03:00")
+  end
 end
