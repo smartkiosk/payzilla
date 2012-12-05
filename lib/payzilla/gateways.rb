@@ -5,6 +5,7 @@ module Payzilla
     class Gateway
       attr_accessor :config
       attr_accessor :logger
+      attr_accessor :revision_page_size
 
       def initialize(config, log=nil)
         @config = config
@@ -19,6 +20,8 @@ module Payzilla
           @logger.level = @config.debug_level if @config.respond_to?(:debug_level)
           @logger.formatter = Logger::Formatter.new
         end
+
+        @revision_page_size = 5000
       end
 
       def self.register_settings(list)
@@ -82,6 +85,33 @@ module Payzilla
       end
 
     protected
+
+      def paginate_payments(payments, *args, &block)
+        totals = {
+          :count => 0,
+          :sum   => 0
+        }
+
+        if payments.respond_to?(:limit)
+          pages = (payments.count.to_f / revision_page_size.to_f).ceil
+
+          pages.times do |p|
+            slice = payments.offset(p*revision_page_size).limit(revision_page_size)
+
+            yield slice, *args
+
+            totals[:count] += slice.count
+            totals[:sum]   += slice.map{|x| x.enrolled_amount}.inject(:+)
+          end
+        else
+          yield payments, *args
+
+          totals[:count] = payments.count
+          totals[:sum]   = payments.map{|x| x.enrolled_amount}.inject(:+)          
+        end
+
+        totals
+      end
 
       def dump_xml(text)
         xml = ""

@@ -34,19 +34,17 @@ module Payzilla
 
       def generate_revision(revision)
         builder = Builder::XmlMarkup.new
+        count   = 0
+        sum     = 0
 
         builder.instruct! :xml, version: "1.0", encoding: "WINDOWS-1251"
         data = builder.reestr do
-          revision.payments.each do |p|
-            builder.r do
-              builder.m p.account
-              builder.s p.enrolled_amount
-              builder.n p.id
-              builder.d p.created_at.strftime("%d.%m.%Y %H:%M:%S")
-            end
+          totals = paginate_payments(revision.payments, builder) do |slice, builder|
+            generate_revision_page(slice, builder)
           end
-          builder.pay_sum revision.payments.map{|x| x.enrolled_amount}.inject(:+)
-          builder.pay_count revision.payments.count
+
+          builder.pay_sum totals[:sum]
+          builder.pay_count totals[:count]
         end
 
         [:xml, data]
@@ -62,6 +60,17 @@ module Payzilla
       end
 
     private
+
+      def generate_revision_page(payments, builder)
+        payments.each do |p|
+          builder.r do
+            builder.m p.account
+            builder.s p.enrolled_amount
+            builder.n p.id
+            builder.d p.created_at.strftime("%d.%m.%Y %H:%M:%S")
+          end
+        end
+      end
 
       def retval(code)
         {:success => (code == "0"), :error => code}

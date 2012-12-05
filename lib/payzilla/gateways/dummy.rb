@@ -15,7 +15,13 @@ module Payzilla
       end
 
       def generate_revision(revision)
-        [:xml, revision.payments.to_xml]
+        buffer = []
+
+        paginate_payments(revision.payments, buffer) do |slice, buffer|
+          buffer << generate_revision_page(slice)
+        end
+
+        [:xml, buffer.join('')]
       end
 
       def send_revision(revision, data)
@@ -23,6 +29,10 @@ module Payzilla
       end
 
     private
+
+      def generate_revision_page(payments)
+        payments.to_xml(:skip_instruct => true, :root => 'slice')
+      end
 
       def retval
         if @config.switch_allow_fails

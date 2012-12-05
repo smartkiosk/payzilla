@@ -14,7 +14,7 @@ describe Payzilla::Gateways::Megafon do
     @transport = Payzilla::Gateways::Megafon.new(config, './log/megafon.log')
   end
 
-  it "checks" do
+  xit "checks" do
     payment = OpenStruct.new(:account => '9268123698')
     @transport.check(payment)[:success].should == true
 
@@ -22,7 +22,7 @@ describe Payzilla::Gateways::Megafon do
     @transport.check(payment)[:success].should == false
   end
 
-  it "pays" do
+  xit "pays" do
     payment = OpenStruct.new(:id => Time.now.to_i, :account => '9268123698', :enrolled_amount => 100)
     @transport.pay(payment)[:success].should == true
   end
@@ -36,6 +36,8 @@ describe Payzilla::Gateways::Megafon do
     end
 
     revision = OpenStruct.new(:payments => payments, :date => date)
+
+    binding.pry
 
     @transport.revise(revision)[:success].should == true
   end
