@@ -7,7 +7,7 @@ module Payzilla
     class Beeline < Gateway
       requires_revision
       register_settings %w(url partner_id payment_point_id)
-      register_attachments %w(wsdl cert key ca)
+      register_attachments %w(wsdl ca)
 
       def check(payment)
         begin
@@ -66,7 +66,8 @@ module Payzilla
       def generate_revision(revision)
         return retval(-1001) if settings_miss?
 
-        list_json = list_xml = []
+        list_json = []
+        list_xml  = []
         revision.payments.each do |p|
           list_json << {
             :paymentPointId => @config.setting_payment_point_id,
@@ -85,10 +86,10 @@ module Payzilla
 
           list_xml << {
             :reconciliationPayment => {
+              :subagentId  => p.subagent_id,
               :paymentPointId => @config.setting_payment_point_id,
               :money       => "",
               :phone       => p.account,
-              :subagentId  => p.subagent_id,
 
               :attributes! => {
                 :money => {
@@ -100,7 +101,7 @@ module Payzilla
 
             :attributes! => {
               :reconciliationPayment => {
-                :paymentTime  => p.created_at,
+                :paymentTime  => p.created_at.strftime("%Y-%m-%dT%H:%M:%SZ%:z"),
                 :externalId   => p.id,
                 :registeredId => p.id
               }
@@ -129,16 +130,29 @@ module Payzilla
           :paymentsList => list_xml,
 
           :attributes! => {
-            :partnerId => { :xmlns => "http://payment.beepayxp.jetinfosoft.ru/PaymentTypes.xsd" }
+            :partnerId => { :xmlns => "http://payment.beepayxp.jetinfosoft.ru/PaymentTypes.xsd" },
+            :paymentsList => { :xmlns => "http://payment.beepayxp.jetinfosoft.ru/PaymentTypes.xsd" }
           }
         }
 
         [:json, ::JSON.generate(data_json), :xml, data_xml]
       end
 
-      def send_revision(revision, opts)
+      def send_revision(revision)
         return retval(-1001) if settings_miss?
-        opts.merge!({:method => "reconciliation"})
+        opts = {
+          :method => "reconciliation",
+          :startTime => revision.date.to_date.to_datetime.strftime("%Y-%m-%dT%H:%M:%SZ%:z"),
+          :endTime => DateTime.new(
+                        revision.date.year,
+                        revision.date.month,
+                        revision.date.day,
+                        23,
+                        59,
+                        59
+                      ).strftime("%Y-%m-%dT%H:%M:%SZ%:z")
+        }
+        revision = generate_revision(revision)[3]
 
         begin
           result = request :register_transfer, revision, opts
@@ -153,8 +167,6 @@ module Payzilla
       def settings_miss?
         @config.setting_partner_id.blank?       ||
         @config.setting_payment_point_id.blank? ||
-        @config.attachment_cert.blank?          ||
-        @config.attachment_key.blank?           ||
         @config.attachment_wsdl.blank?
       end
 
@@ -172,7 +184,7 @@ module Payzilla
         "123"
       end
 
-      def request(method, params, opts={})
+      def request(method, params, opts)
         Savon.config.env_namespace = :soap
         client = Savon.client @config.attachment_wsdl.path
         client.wsdl.endpoint = @config.setting_url
@@ -183,20 +195,20 @@ module Payzilla
           http.auth.ssl.verify_mode = :none
           soap.element_form_default = :unqualified
           soap.namespaces.delete("xmlns:pt")
-          soap.input = ["#{opts[:method]}Request"]
+          soap.input = ["#{opts.kind_of?(Hash) ? opts[:method] : method.to_s.lower_camelcase}Request"]
           soap.input << if method == :register_transfer
                           {
-                            :startTime => opts[:start_time],
-                            :endTime   => opts[:end_time]
+                            :startTime => opts[:startTime],
+                            :endTime   => opts[:endTime],
+                            :xmlns     => "http://payment.beepayxp.jetinfosoft.ru"
                           }
                         else
                           {
-                            :paymentTime => payment.created_at.strftime("%Y-%m-%dT%H:%M:%SZ%:z"),
-                            :externalId  => payment.id,
+                            :paymentTime => opts.created_at.strftime("%Y-%m-%dT%H:%M:%SZ%:z"),
+                            :externalId  => opts.id,
                             :xmlns       => "http://payment.beepayxp.jetinfosoft.ru"
                           }
                         end
-
           soap.body   = params
           soap.header = {
             :digitalSignature => {

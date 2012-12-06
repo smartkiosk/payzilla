@@ -9,8 +9,6 @@ describe Payzilla::Gateways::Beeline do
     config.setting_url              = 'https://bpxptestpg.beeline.ru'
 
     config.attachment_wsdl          = File.new('schemas/beeline.wsdl')
-    config.attachment_cert          = File.new('certificates/mts.pem')
-    config.attachment_key           = File.new('certificates/mts.pem')
 
     @transport = Payzilla::Gateways::Beeline.new(config, './log/beeline.log')
 
@@ -48,6 +46,6 @@ describe Payzilla::Gateways::Beeline do
 
   it "revises" do
     data = @transport.generate_revision(@revision)[3]
-    @transport.send_revision(data, :start_time => "2006-03-05T12:11:57Z+03:00", :end_time => "2006-03-05T12:11:57Z+03:00")
+    @transport.send_revision(@revision)
   end
 end
