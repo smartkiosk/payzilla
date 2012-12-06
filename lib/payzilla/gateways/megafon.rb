@@ -43,7 +43,7 @@ module Payzilla
             generate_revision_page(slice, builder)
           end
 
-          builder.pay_sum totals[:sum]
+          builder.pay_sum totals[:enrolled_sum]
           builder.pay_count totals[:count]
         end
 

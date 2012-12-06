@@ -88,8 +88,9 @@ module Payzilla
 
       def paginate_payments(payments, *args, &block)
         totals = {
-          :count => 0,
-          :sum   => 0
+          :count        => 0,
+          :enrolled_sum => 0,
+          :paid_sum     => 0
         }
 
         if payments.respond_to?(:limit)
@@ -100,14 +101,16 @@ module Payzilla
 
             yield slice, *args
 
-            totals[:count] += slice.count
-            totals[:sum]   += slice.map{|x| x.enrolled_amount}.inject(:+)
+            totals[:count]        += slice.count
+            totals[:enrolled_sum] += slice.map{|x| x.enrolled_amount}.inject(:+)
+            totals[:paid_sum]     += slice.map{|x| x.paid_amount}.inject(:+)
           end
         else
           yield payments, *args
 
-          totals[:count] = payments.count
-          totals[:sum]   = payments.map{|x| x.enrolled_amount}.inject(:+)          
+          totals[:count]        = payments.count
+          totals[:enrolled_sum] = payments.map{|x| x.enrolled_amount}.inject(:+)
+          totals[:paid_sum]     = payments.map{|x| x.paid_amount}.inject(:+)
         end
 
         totals
