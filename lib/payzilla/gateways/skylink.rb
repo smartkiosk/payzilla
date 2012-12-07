@@ -1,6 +1,7 @@
 # coding: utf-8
 
 require 'builder'
+require 'crack'
 
 module Payzilla
   module Gateways
