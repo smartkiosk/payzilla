@@ -10,9 +10,10 @@ module Payzilla
 
       def check(payment)
         begin 
-          result = send 'Validate_phone',
+          result = send 'VALIDATE_PHONE',
             :PhoneNum => payment.account
 
+          puts "Result is: #{result.inspect}"
           return retval(result)
         rescue Errno::ECONNRESET
           return retval(-1000)
@@ -23,7 +24,7 @@ module Payzilla
         begin
           transaction = get_transaction
 
-          result = send 'Pay_cash_input',
+          result = send 'PAY_CASH_INPUT',
             :PayNum => transaction,
             :PurposeID => 2,
             :PurposeNum => payment.account,
@@ -32,7 +33,7 @@ module Payzilla
             :RegDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
             :PosNum => "0",
             :PayDocNum => payment.id
-
+            
           return retval(result, transaction)
         rescue Errno::ECONNRESET
           return retval(-1000)
@@ -49,7 +50,7 @@ module Payzilla
           end
         end
 
-        result = send 'Report_xml_send',
+        result = send 'REPORT_XML_SEND',
           :RegDate => date.strftime("%d.%m.%Y"),
           :Register => data
 
@@ -66,10 +67,10 @@ module Payzilla
             :PurposeID => 2,
             :PurposeNum => p.account,
             :PayNum => p.gateway_payment_id,
-            :PayDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
-            :RegDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
+            :PayDate => p.created_at.strftime("%d.%m.%Y %H:%M:%S"),
+            :RegDate => p.created_at.strftime("%d.%m.%Y %H:%M:%S"),
             :PosNum => "0",
-            :PayDocNum => payment.id
+            :PayDocNum => p.id
           )
         end
       end
@@ -82,7 +83,7 @@ module Payzilla
       end
 
       def get_transaction
-        return send('Pay_num_get')
+        return send('PAY_NUM_GET')
       end
 
       def send(operation, params={})
@@ -101,9 +102,9 @@ module Payzilla
           end
         end
 
-        resource = RestClient::Resource.new(@config.setting_url)
-        result   = resource.post data.to_s
-        return result.to_s
+        url = "#{@config.setting_url}/#{operation}"
+        puts url
+        return RestClient.post url, params
       end
     end
   end
