@@ -47,6 +47,6 @@ describe Payzilla::Gateways::Beeline do
 
   it "revises" do
     data = @transport.generate_revision(@revision)[1]
-    @transport.send_revision(@revision)
+    response = @transport.send_revision(data)[:success].should == true
   end
 end
