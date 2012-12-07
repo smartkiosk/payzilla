@@ -66,25 +66,25 @@ module Payzilla
       def generate_revision(revision)
         return retval(-1001) if settings_miss?
 
-        list_json = []
-        list_xml  = []
-        revision.payments.each do |p|
-          list_json << {
-            :paymentPointId => @config.setting_payment_point_id,
-            :money => {
-              :amount => p.enrolled_amount,
-              :code   => 'RUR'
-            },
-            :amountAll => {
-              :amount => p.paid_amount,
-              :code => 'RUR'
-            },
-            :phone       => p.account,
-            :paymentTime => p.created_at,
-            :externalId  => p.id
-          }
+        builder = []
+        paginate_payments(revision.payments, builder) do |slice,buidler|
+          generate_revision_page(slice, builder)
+        end
+        data = {
+          :partnerId => @config.setting_partner_id,
+          :paymentsList => builder,
 
-          list_xml << {
+          :attributes! => {
+            :partnerId => { :xmlns => "http://payment.beepayxp.jetinfosoft.ru/PaymentTypes.xsd" },
+            :paymentsList => { :xmlns => "http://payment.beepayxp.jetinfosoft.ru/PaymentTypes.xsd" }
+          }
+        }
+        [:xml, data]
+      end
+
+      def generate_revision_page(payments, builder)
+        payments.each do |p|
+          builder << {
             :reconciliationPayment => {
               :subagentId  => p.subagent_id,
               :paymentPointId => @config.setting_payment_point_id,
@@ -108,34 +108,6 @@ module Payzilla
             }
           }
         end
-
-        data_json = {
-          :reconciliationRequest => {
-            :partnerId => @config.setting_partner_id,
-            :paymentsList => list_json,
-            :startTime => revision.date.to_date.to_datetime,
-            :endTime => DateTime.new(
-                          revision.date.year,
-                          revision.date.month,
-                          revision.date.day,
-                          23,
-                          59,
-                          59
-                        )
-          }
-        }
-
-        data_xml = {
-          :partnerId => @config.setting_partner_id,
-          :paymentsList => list_xml,
-
-          :attributes! => {
-            :partnerId => { :xmlns => "http://payment.beepayxp.jetinfosoft.ru/PaymentTypes.xsd" },
-            :paymentsList => { :xmlns => "http://payment.beepayxp.jetinfosoft.ru/PaymentTypes.xsd" }
-          }
-        }
-
-        [:json, ::JSON.generate(data_json), :xml, data_xml]
       end
 
       def send_revision(revision)
@@ -152,7 +124,7 @@ module Payzilla
                         59
                       ).strftime("%Y-%m-%dT%H:%M:%SZ%:z")
         }
-        revision = generate_revision(revision)[3]
+        revision = generate_revision(revision)[1]
 
         begin
           result = request :register_transfer, revision, opts

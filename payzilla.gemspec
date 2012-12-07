@@ -6,8 +6,8 @@ require 'payzilla/version'
 Gem::Specification.new do |gem|
   gem.name          = "payzilla"
   gem.version       = Payzilla::VERSION
-  gem.authors       = ["Boris Staal"]
-  gem.email         = ["boris@roundlake.ru"]
+  gem.authors       = ["Boris Staal", "Vasilij Melnychuck"]
+  gem.email         = ["boris@roundlake.ru", "v.melnychuck@roundlake.ru"]
   gem.description   = %q{Payzilla}
   gem.summary       = %q{Payzilla}
   gem.homepage      = ""

@@ -10,7 +10,7 @@ module Payzilla
 
       def check(payment)
         begin 
-          result = send 'Validate_phone', 
+          result = send 'Validate_phone',
             :PhoneNum => payment.account
 
           return retval(result)
@@ -44,18 +44,8 @@ module Payzilla
 
         builder.instruct!
         data = builder.payments do
-          payments.each do |p|
-            builder.payment(
-              :PaySum => p.enrolled_amount,
-              :PayType => 1, 
-              :PurposeID => 2,
-              :PurposeNum => p.account,
-              :PayNum => p.gateway_payment_id,
-              :PayDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
-              :RegDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
-              :PosNum => "0",
-              :PayDocNum => payment.id
-            )
+          paginate_payments(payments, builder) do |slice, builder|
+            generate_revision_page(slice, builder)
           end
         end
 
@@ -67,6 +57,22 @@ module Payzilla
       end
 
     private
+
+      def generate_revision_page(payments, builder)
+        payments.each do |p|
+          builder.payment(
+            :PaySum => p.enrolled_amount,
+            :PayType => 1,
+            :PurposeID => 2,
+            :PurposeNum => p.account,
+            :PayNum => p.gateway_payment_id,
+            :PayDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
+            :RegDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
+            :PosNum => "0",
+            :PayDocNum => payment.id
+          )
+        end
+      end
 
       def retval(code, transaction=false)
         result = {:success => (code == "0"), :error => code}
@@ -80,7 +86,7 @@ module Payzilla
       end
 
       def send(operation, params={})
-        if @config.setting_client.blank?   || 
+        if @config.setting_client.blank?   ||
            @config.setting_url.blank?
            return -1001
          end

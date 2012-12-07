@@ -13,7 +13,7 @@ module Payzilla
       def check(payment)
         return retval(-1001) if settings_miss?
 
-        begin 
+        begin
           xml = Builder::XmlMarkup.new
 
           xml.f_01(payment.account, :"xsi:type" => 'espp-constraints:PHN_CODE_fmt_01')

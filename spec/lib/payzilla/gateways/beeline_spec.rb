@@ -39,13 +39,13 @@ describe Payzilla::Gateways::Beeline do
   end
 
   it "generates revision" do
-    data = JSON.parse @transport.generate_revision(@revision)[1]
+    data = @transport.generate_revision(@revision)[1]
 
     data['reconciliationRequest']['partnerId'].should == '939'
   end
 
   it "revises" do
-    data = @transport.generate_revision(@revision)[3]
+    data = @transport.generate_revision(@revision)[1]
     @transport.send_revision(@revision)
   end
 end
