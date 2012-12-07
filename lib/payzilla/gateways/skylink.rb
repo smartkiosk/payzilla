@@ -31,8 +31,11 @@ module Payzilla
             :PaySum => payment.enrolled_amount,
             :PayDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
             :RegDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
+            :Payer => '',
+            :CardNum => '',
             :PosNum => "0",
-            :PayDocNum => payment.id
+            :PayDocNum => payment.id,
+            :Dsc => ''
 
 
           return retval(result, transaction)
@@ -94,7 +97,8 @@ module Payzilla
          end
 
         params[:PaySystemCode] = @config.setting_client
-
+        
+        puts "Operation: #{operation}. params: #{params.inspect}"
         result = RestClient.post "#{@config.setting_url}/#{operation}", params
 
         return Crack::XML.parse(result)
