@@ -7,7 +7,7 @@ module Payzilla
     class Beeline < Gateway
       requires_revision
       register_settings %w(url partner_id payment_point_id)
-      register_attachments %w(wsdl ca)
+      register_attachments %w(wsdl cert ca)
 
       def check(payment)
         begin
@@ -82,6 +82,32 @@ module Payzilla
         [:xml, data]
       end
 
+      def send_revision(revision)
+        return retval(-1001) if settings_miss?
+        opts = {
+          :method => "reconciliation",
+          :startTime => revision.date.to_date.to_datetime.strftime("%Y-%m-%dT%H:%M:%SZ%:z"),
+          :endTime => DateTime.new(
+                        revision.date.year,
+                        revision.date.month,
+                        revision.date.day,
+                        23,
+                        59,
+                        59
+                      ).strftime("%Y-%m-%dT%H:%M:%SZ%:z")
+        }
+        revision = generate_revision(revision)[1]
+
+        begin
+          result = request :register_transfer, revision, opts
+          return retval(result.to_hash[:reconciliationResponse][:error][:error])
+        rescue Errno::ECONNRESET
+          return retval(-1000)
+        end
+      end
+
+    private
+
       def generate_revision_page(payments, builder)
         payments.each do |p|
           builder << {
@@ -110,35 +136,10 @@ module Payzilla
         end
       end
 
-      def send_revision(revision)
-        return retval(-1001) if settings_miss?
-        opts = {
-          :method => "reconciliation",
-          :startTime => revision.date.to_date.to_datetime.strftime("%Y-%m-%dT%H:%M:%SZ%:z"),
-          :endTime => DateTime.new(
-                        revision.date.year,
-                        revision.date.month,
-                        revision.date.day,
-                        23,
-                        59,
-                        59
-                      ).strftime("%Y-%m-%dT%H:%M:%SZ%:z")
-        }
-        revision = generate_revision(revision)[1]
-
-        begin
-          result = request :register_transfer, revision, opts
-          return retval(result.to_hash[:reconciliationResponse][:error][:error])
-        rescue Errno::ECONNRESET
-          return retval(-1000)
-        end
-      end
-
-    private
-
       def settings_miss?
         @config.setting_partner_id.blank?       ||
         @config.setting_payment_point_id.blank? ||
+        @config.attachment_cert.blank?             ||
         @config.attachment_wsdl.blank?
       end
 
@@ -147,13 +148,20 @@ module Payzilla
       end
 
       def sign_request(text)
-        #begin
-        #  system("cryptcp -sign -f 22.cer -nochain test.txt test.msg")
-        #  File.read("test.txt")
-        #ensure
-        #  raise "cryptcp failed while doing something" if $? != 0
-        #end
-        "123"
+        cryptcp = "#{Dir.pwd}/bin/cryptcp"
+        out_txt = "#{Dir.pwd}/certificats/beeline_out.txt"
+        out_msg = "#{Dir.pwd}/certificats/beeline_out.msg"
+
+        begin
+          system("#{cryptcp} -sign -f #{@config.attachment_cert.path} \
+                 -nochain #{out_txt} \
+                 #{out_msg}")
+          signature = File.read(out_txt)
+        ensure
+          raise "cryptcp failed while doing something" if $? != 0
+        end
+
+        signature
       end
 
       def request(method, params, opts)

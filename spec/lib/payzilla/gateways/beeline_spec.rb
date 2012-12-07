@@ -9,6 +9,7 @@ describe Payzilla::Gateways::Beeline do
     config.setting_url              = 'https://bpxptestpg.beeline.ru'
 
     config.attachment_wsdl          = File.new('schemas/beeline.wsdl')
+    config.attachment_cert          = File.new('certificats/beeline.cer')
 
     @transport = Payzilla::Gateways::Beeline.new(config, './log/beeline.log')
 
