@@ -31,11 +31,11 @@ module Payzilla
             :PaySum => payment.enrolled_amount,
             :PayDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
             :RegDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
-            :Payer => '',
+            :Payer => 'Tester',
             :CardNum => '',
             :PosNum => "0",
             :PayDocNum => payment.id,
-            :Dsc => ''
+            :Dsc => '1'
 
 
           return retval(result, transaction)
@@ -100,7 +100,7 @@ module Payzilla
         
         puts "Operation: #{operation}. params: #{params.inspect}"
         result = RestClient.post "#{@config.setting_url}/#{operation}", params
-
+        puts "Operation: #{operation}. result: #{result.inspect}"
         return Crack::XML.parse(result)
       end
     end
