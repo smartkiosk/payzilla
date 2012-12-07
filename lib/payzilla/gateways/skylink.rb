@@ -14,7 +14,7 @@ module Payzilla
           result = send 'VALIDATE_PHONE',
             :PhoneNum => payment.account
 
-          return retval(result)
+          return retval(result['string'].split(':').first)
         rescue Errno::ECONNRESET
           return retval(-1000)
         end
@@ -33,6 +33,7 @@ module Payzilla
             :RegDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
             :PosNum => "0",
             :PayDocNum => payment.id
+
 
           return retval(result, transaction)
         rescue Errno::ECONNRESET
@@ -83,7 +84,7 @@ module Payzilla
       end
 
       def get_transaction
-        return send('PAY_NUM_GET')
+        return send('PAY_NUM_GET')["int"].to_i
       end
 
       def send(operation, params={})
@@ -96,7 +97,7 @@ module Payzilla
 
         result = RestClient.post "#{@config.setting_url}/#{operation}", params
 
-        return Crack::XML.parse(result)['string'].split(':').first
+        return Crack::XML.parse(result)
       end
     end
   end
