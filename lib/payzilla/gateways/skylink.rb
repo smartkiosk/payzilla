@@ -98,9 +98,7 @@ module Payzilla
 
         params[:PaySystemCode] = @config.setting_client
         
-        puts "Operation: #{operation}. params: #{params.inspect}"
         result = RestClient.post "#{@config.setting_url}/#{operation}", params
-        puts "Operation: #{operation}. result: #{result.inspect}"
         return Crack::XML.parse(result)
       end
     end
