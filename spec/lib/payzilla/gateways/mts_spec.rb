@@ -39,13 +39,13 @@ describe Payzilla::Gateways::Mts do
     payment = OpenStruct.new(:account => '123')
     @transport.check(payment)[:success].should == false
 
-    @payments.each do |pay|
-      #result = @transport.check(pay)
-      #result[:success].should == true
-      puts @transport.check(pay)
-      puts "    "
-      puts pay.account
-    end
+    # @payments.each do |pay|
+    #   #result = @transport.check(pay)
+    #   #result[:success].should == true
+    #   puts @transport.check(pay)
+    #   puts "    "
+    #   puts pay.account
+    # end
   end
 
   #it "pays" do
