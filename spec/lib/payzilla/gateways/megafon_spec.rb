@@ -37,8 +37,6 @@ describe Payzilla::Gateways::Megafon do
 
     revision = OpenStruct.new(:payments => payments, :date => date)
 
-    binding.pry
-
     @transport.revise(revision)[:success].should == true
   end
 end
