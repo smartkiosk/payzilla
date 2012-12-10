@@ -1,6 +1,7 @@
 # coding: utf-8
 
 require 'crack'
+require 'nokogiri'
 
 module Payzilla
   module Gateways
@@ -110,14 +111,19 @@ module Payzilla
 
       def request(method, params={})
         params[:function] = method
+        ssl_conf = ssl(
+                   @config.attachment_cert,
+                   @config.attachment_key,
+                   @config.setting_key_password,
+                   @config.attachment_ca
+                 )
 
-        result = get @config.setting_url, params,
-          ssl(
-            @config.attachment_cert,
-            @config.attachment_key,
-            @config.setting_key_password,
-            @config.attachment_ca
-          )
+        if RUBY_PLATFORM =~ /java/
+          JHTTPClient.new("certificates/rapida.truststore", "123456",
+                         @config.setting_url)
+        else
+          result = get @config.setting_url, params, ssl_conf
+        end
 
         logger.debug(dump_xml result) unless logger.blank?
         return Crack::XML.parse(result)
