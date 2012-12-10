@@ -3,12 +3,12 @@
 module Payzilla
   module Gateways
     class Osmp < Gateway
-      register_settings %w(client password terminal)
+      register_settings %w(client password terminal domain)
 
       def check(payment)
         begin
-          result = Hash.from_xml checkPaymentRequisites(
-            payment.id, 
+          result = Crack::XML.parse checkPaymentRequisites(
+            payment.id,
             643,
             payment.paid_amount,
             payment.enrolled_amount,
@@ -26,8 +26,8 @@ module Payzilla
 
       def pay(payment)
         begin
-          result = Hash.from_xml addOfflinePayment(
-            payment.id, 
+          result = Crack::XML.parse addOfflinePayment(
+            payment.id,
             643,
             payment.paid_amount,
             payment.enrolled_amount,
@@ -53,15 +53,16 @@ module Payzilla
         message =
             "<?xml version='1.0' encoding='windows-1251'?>
             <request>
-              <auth login='#{setting_client}' sign='#{Digest::MD5.hexdigest(setting_password.to_s)}' signAlg='MD5'/>
-              <client terminal='#{setting_terminal}' software='Dealer v0' serial='' timezone='GMT+03' />
+              <auth login='#{@config.setting_client}' sign='#{Digest::MD5.hexdigest(@config.setting_password.to_s)}' signAlg='MD5'/>
+              <client terminal='#{@config.setting_terminal}' software='Dealer v0' serial='' timezone='GMT+03' />
               #{message}
             </request>"
 
-        url    = URI.parse('http://xml1.osmp.ru/xmlgate/xml.jsp')
+        url    = URI.parse(@config.setting_domain)
         http   = Net::HTTP.new(url.host, url.port)
         result = http.post(url.path, message)
 
+        logger.debug(result.body) unless logger.blank?
         return result.body
       end
 
@@ -70,7 +71,6 @@ module Payzilla
           <providers>
             <checkPaymentRequisites>
               <payment id='#{id}'>
-                <extras #{fields} />
                 <from currency='#{currency}' amount='#{paid_amount}'/>
                 <to currency='#{currency}' service='#{provider_id}' amount='#{enroll_amount}' account='#{account}'/>
                 <receipt id='#{id}' date='#{DateTime.now}'/>
@@ -81,13 +81,12 @@ module Payzilla
       end
 
       def addOfflinePayment(id, currency, paid_amount, enroll_amount, provider_id, account, fields = {})
-        fields = fields.map{|k,v| "#{k.gsub('_extra_', '')}='#{v}'"}.join(' ')
+        #fields = fields.map{|k,v| "#{k.gsub('_extra_', '')}='#{v}'"}.join(' ')
 
         send "
           <providers>
             <addOfflinePayment>
               <payment id='#{id}'>
-                <extras #{fields} />
                 <from currency='#{currency}' amount='#{paid_amount}'/>
                 <to currency='#{currency}' service='#{provider_id}' amount='#{enroll_amount}' account='#{account}'/>
                 <receipt id='#{id}' date='#{DateTime.now}'/>
