@@ -1,5 +1,7 @@
 # coding: utf-8
 
+require 'nokogiri'
+
 module Payzilla
   module Gateways
     class Osmp < Gateway
@@ -7,7 +9,7 @@ module Payzilla
 
       def check(payment)
         begin
-          result = Crack::XML.parse checkPaymentRequisites(
+          result = Nokogiri::XML checkPaymentRequisites(
             payment.id,
             643,
             payment.paid_amount,
@@ -16,7 +18,7 @@ module Payzilla
             payment.account,
             payment.fields
           )
-          code = result['response']['providers']['checkPaymentRequisites']['payment']['result'].to_i rescue -1
+          code = Nokogiri::XML(result).css("response").first.attributes["result"].value.to_i rescue -1
         rescue Errno::ECONNRESET
           code = -1000
         end
@@ -26,7 +28,7 @@ module Payzilla
 
       def pay(payment)
         begin
-          result = Crack::XML.parse addOfflinePayment(
+          result = Nokogiri::XML addOfflinePayment(
             payment.id,
             643,
             payment.paid_amount,
@@ -35,7 +37,7 @@ module Payzilla
             payment.account,
             payment.fields
           )
-          code = result['response']['providers']['addOfflinePayment']['payment']['result'].to_i
+          code = Nokogiri::XML(result).css("response").first.attributes["result"].value.to_i rescue -1
         rescue Errno::ECONNRESET
           code = -1000
         end
@@ -81,7 +83,7 @@ module Payzilla
       end
 
       def addOfflinePayment(id, currency, paid_amount, enroll_amount, provider_id, account, fields = {})
-        #fields = fields.map{|k,v| "#{k.gsub('_extra_', '')}='#{v}'"}.join(' ')
+        #fields = fields.map{|k,v| "#{k.to_s.gsub('_extra_', '')}='#{v}'"}.join(' ')
 
         send "
           <providers>
