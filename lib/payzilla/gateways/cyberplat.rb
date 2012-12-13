@@ -8,14 +8,14 @@ module Payzilla
     class Cyberplat < Gateway
       include Payzilla::Transports::HTTP
 
-      register_settings %w(host operator point key_password)
+      register_settings %w(host operator point key_password dealer)
       register_attachments %w(private_key public_key)
 
       def check(payment)
         result = request 'pay_check', payment.gateway_provider_id,
-          :SD         => @config.setting_operator,
+          :SD         => @config.setting_dealer,
           :AP         => @config.setting_point,
-          :OP         => payment.terminal_id,
+          :OP         => @config.setting_operator,
           :SESSION    => payment.id,
           :NUMBER     => payment.account,
           :ACCOUNT    => payment.fields['account'],
@@ -27,9 +27,9 @@ module Payzilla
 
       def pay(payment)
         result = request 'pay', payment.gateway_provider_id, 
-          :SD         => @config.setting_operator,
+          :SD         => @config.setting_dealer,
           :AP         => @config.setting_point,
-          :OP         => payment.terminal_id,
+          :OP         => @config.setting_operator,
           :SESSION    => payment.id,
           :NUMBER     => payment.account,
           :ACCOUNT    => payment.fields['account'],
@@ -69,7 +69,7 @@ module Payzilla
 
           url  = "https://#{@config.setting_host}/cgi-bin/#{provider}/#{provider}_pay_check.cgi"
           data = "inputmessage=#{CGI::escape sign(data)}"
-
+          
           result = post url, data, :content_type => 'application/x-www-form-urlencoded'
 
           result = result.gsub("\r", '')
