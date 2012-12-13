@@ -19,7 +19,7 @@ describe Payzilla::Gateways::Cyberplat do
   it "checks" do
     payment = OpenStruct.new(
       :id => Time.now.to_i,
-      :gateway_provider_id => 'b3',
+      :gateway_provider_id => 'es',
       :account => '8888888888',
       :fields => {},
       :agent_id => 1
@@ -31,7 +31,7 @@ describe Payzilla::Gateways::Cyberplat do
   it "pays" do
     payment = OpenStruct.new(
       :id => Time.now.to_i,
-      :gateway_provider_id => 'b3',
+      :gateway_provider_id => 'es',
       :account => '8888888888',
       :fields => {},
       :terminal_id => 1,
