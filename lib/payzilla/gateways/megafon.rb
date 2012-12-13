@@ -49,13 +49,21 @@ module Payzilla
 
         [:xml, data]
       end
-
+      
       def send_revision(revision, data)
         result = request 'HTTP_LOAD_REESTR', :post,
           :LOGIN     => @config.setting_client,
           :PASSWORD  => @config.setting_password,
           :P_DATE    => revision.date.strftime('%d.%m.%Y'),
           :FILE_DATA => Payzilla::Utils::StringFile.new('data.xml', data)
+        return retval(result)
+      end
+
+      def check_revision(revision)
+        result = request 'HTTP_GET_REESTR_STATUS', :get,
+          :LOGIN     => @config.setting_client,
+          :PASSWORD  => @config.setting_password,
+          :P_DATE    => revision.date.strftime('%d.%m.%Y')
         return retval(result)
       end
 
