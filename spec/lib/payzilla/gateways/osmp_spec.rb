@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Payzilla::Gateways::Osmp do
   before(:all) do
     config = ConfigStub.new('osmp')
-    config.setting_domain    = 'http://xml1.osmp.ru/xmlgate/xml.jsp'
+    config.setting_domain    = 'https://w.qiwi.ru/term2/xmlutf.jsp'
     config.setting_client    = '44'
     config.setting_password  = 'vC2VNgAv'
     config.setting_terminal  = 'MKB'

@@ -62,7 +62,11 @@ module Payzilla
 
         url    = URI.parse(@config.setting_domain)
         http   = Net::HTTP.new(url.host, url.port)
-        result = http.post(url.path, message)
+        
+        
+        result = RestClient.post @config.setting_domain, message
+                
+        #result = http.post(url.path, message)
 
         logger.debug(result.body) unless logger.blank?
         return result.body
