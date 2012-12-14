@@ -68,8 +68,9 @@ module Payzilla
           data = data.join("\r\n")
           
           provider_params = provider.split('$')
+          url_appendix = provider_params[1] ? "/#{provider_params[1]}" : ''
 
-          url  = "https://#{@config.setting_host}/cgi-bin/#{provider_params[0]}/#{provider_params[0]}_pay_check.cgi/#{provider_params[1]}"
+          url  = "https://#{@config.setting_host}/cgi-bin/#{provider_params[0]}/#{provider_params[0]}_pay_check.cgi#{url_appendix}"
           data = "inputmessage=#{CGI::escape sign(data)}"
           
           result = post url, data, :content_type => 'application/x-www-form-urlencoded'
