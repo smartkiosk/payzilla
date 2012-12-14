@@ -4,11 +4,13 @@ describe Payzilla::Gateways::Yamoney do
   before(:all) do
     config = ConfigStub.new('yamoney')
 
-    config.setting_url      = "https://money.yandex.ru/api/"
+    config.setting_url      = "https://bo-demo02.yamoney.ru/onlinegates/mkb.aspx"
     config.setting_currency = 10643
     config.setting_password = "round345"
+    config.setting_gpg_key  = "MKB"
 
-    config.attachment_gpg   = File.new("certificates/yandex.gpg")
+    config.attachment_public_key  = File.new('certificates/yandex_public.asc')
+    config.attachment_secret_key = File.new('certificates/yandex_private.gpg')
 
     @transport = Payzilla::Gateways::Yamoney.new(config, './log/yamoney.log')
 
@@ -23,7 +25,7 @@ describe Payzilla::Gateways::Yamoney do
     @transport.check(@payment)[:success].should == true
   end
 
-  xit "pays" do
+  it "pays" do
     @transport.pay(@payment)[:success].should == true
   end
 end

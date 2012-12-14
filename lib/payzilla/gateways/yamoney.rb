@@ -5,7 +5,8 @@ require 'gpgme'
 module Payzilla
   module Gateways
     class Yamoney < Gateway
-      register_settings    %w(url currency password)
+      register_settings    %w(url currency password gpg_key)
+      register_attachments %w(public_key secret_key)
 
       def check(payment)
         begin
@@ -49,20 +50,38 @@ module Payzilla
       end
 
       def sign(values)
-        crypto = GPGME::Crypto.new
-        signature = crypto.clearsign values.map{|x| x.to_s}.join('&')
-        signature.read
+        attach_keys
+
+        crypto = GPGME::Crypto.new :armor => true
+        crypto.clearsign(values.map{|x| x.to_s}.join('&'),
+                            {
+                              :password => @config.setting_password,
+                              :signer   => @config.setting_gpg_key
+                            }
+                        )
+      end
+
+      def attach_keys
+        %w(public secret).each do |key|
+          if GPGME::Key.find(key.to_sym, @config.setting_gpg_key).empty?
+            GPGME::Key.import(File.open(@config.send("attachment_#{key}_key".to_sym)))
+          end
+        end
       end
 
       def send(operation, params)
         params[:ACT_CD] = operation
         params[:VERSION] = '2.02'
 
+        attach_keys
+
         resource = RestClient::Resource.new(@config.setting_url)
 
         result = resource.post :params => params
-        result = GPGME::Crypto.new.decrypt(result.to_s,
-                                           :password => @config.setting_password)
+        sign   = GPGME::Crypto.new(:armor => true)
+        result = sign.verify(result.to_s) do |sig|
+          return {:RES_CD => "1", :ERR_CD => "Bad signature" } unless sig =~ /Good/
+        end
         result = result.split("\n").map{|x| x.split("=")}.flatten
         result = Hash[*result].with_indifferent_access
 
