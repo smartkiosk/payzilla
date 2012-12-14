@@ -9,8 +9,8 @@ module Payzilla
       register_attachments %w(cert key ca)
 
       def check(payment)
-        begin 
-          result = send 'check', 
+        begin
+          result = send 'check',
             :number => payment.account,
             :amount => 100
 

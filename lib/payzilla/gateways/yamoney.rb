@@ -5,16 +5,16 @@ require 'gpgme'
 module Payzilla
   module Gateways
     class Yamoney < Gateway
-      register_settings %w(url currency)
+      register_settings    %w(url currency password)
 
       def check(payment)
-        begin 
+        begin
           result = send '1002',
             :TR_NR      => payment.id,
             :DSTACNT_NR => payment.account,
-            :TR_AMT     => 100,
+            :TR_AMT     => payment.enrolled_amount,
             :CUR_CD     => @config.setting_currency,
-            :SIGN       => sign([payment.id, 1002, payment.account, 100, @config.setting_currency])
+            :SIGN       => sign([payment.id, 1002, payment.account, payment.enrolled_amount, @config.setting_currency])
 
           return retval(result)
         rescue Errno::ECONNRESET
@@ -29,7 +29,7 @@ module Payzilla
             :DSTACNT_NR => payment.account,
             :TR_AMT     => payment.enrolled_amount,
             :CUR_CD     => @config.setting_currency,
-            :CONT       => "Пополнение кошелька",
+            :CONT       => "Пополнение кошелька".encode("Windows-1251"),
             :SIGN       => sign([payment.id, 1002, payment.account, payment.enrolled_amount, @config.setting_currency])
 
           return retval(result)
@@ -49,7 +49,9 @@ module Payzilla
       end
 
       def sign(values)
-        GPGME::Crypto.new.clearsign values.map{|x| x.to_s}.join('&')
+        crypto = GPGME::Crypto.new
+        signature = crypto.clearsign values.map{|x| x.to_s}.join('&')
+        signature.read
       end
 
       def send(operation, params)
@@ -59,7 +61,8 @@ module Payzilla
         resource = RestClient::Resource.new(@config.setting_url)
 
         result = resource.post :params => params
-        result = GPGME::Crypto.new.decrypt(result.to_s)
+        result = GPGME::Crypto.new.decrypt(result.to_s,
+                                           :password => @config.setting_password)
         result = result.split("\n").map{|x| x.split("=")}.flatten
         result = Hash[*result].with_indifferent_access
 

@@ -24,7 +24,7 @@ module Payzilla
 
       def pay(payment)
         begin
-          result = send 'process_payment', 
+          result = send 'process_payment',
             :i_transaction_id => payment.gateway_payment_id,
             :i_receipt_num => payment.id
 
