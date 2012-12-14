@@ -66,8 +66,10 @@ module Payzilla
         begin
           data = params.collect{|k,v| "#{k}=#{v.to_s.encode('cp1251')}"}
           data = data.join("\r\n")
+          
+          provider_params = provider.split('$')
 
-          url  = "https://#{@config.setting_host}/cgi-bin/#{provider}/#{provider}_pay_check.cgi"
+          url  = "https://#{@config.setting_host}/cgi-bin/#{provider_params[0]}/#{provider_params[0]}_pay_check.cgi/#{provider_params[1]}"
           data = "inputmessage=#{CGI::escape sign(data)}"
           
           result = post url, data, :content_type => 'application/x-www-form-urlencoded'
