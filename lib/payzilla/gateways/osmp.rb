@@ -1,6 +1,7 @@
 # coding: utf-8
 
 require 'nokogiri'
+require 'crack'
 
 module Payzilla
   module Gateways
@@ -8,17 +9,24 @@ module Payzilla
       register_settings %w(client password terminal domain)
 
       def check(payment)
+        builder = Builder::XmlMarkup.new
+        builder.instruct!
+        data = builder.request do
+          builder.tag! "request-type", 32
+          builder.tag! "terminal-id", @config.setting_client
+          builder.extra @config.setting_password, "name" => "password"
+          builder.extra payment.account,          "name" => "phone"
+        end
+
         begin
-          result = Nokogiri::XML checkPaymentRequisites(
-            payment.id,
-            643,
-            payment.paid_amount,
-            payment.enrolled_amount,
-            payment.gateway_provider_id,
-            payment.account,
-            payment.fields
-          )
-          code = Nokogiri::XML(result).css("response").first.attributes["result"].value.to_i rescue -1
+          result = send data
+          result = Crack::XML.parse(result)
+          # TODO: Change returning code, when user doesn't exist
+          code = if result["response"]["exist"] == "0"
+                   "1"
+                 else
+                   result["response"]["result_code"]
+                 end
         rescue Errno::ECONNRESET
           code = -1000
         end
@@ -27,80 +35,51 @@ module Payzilla
       end
 
       def pay(payment)
+        builder = Builder::XmlMarkup.new
+        builder.instruct!
+        data = builder.request do
+          builder.tag! "request-type", 10
+          builder.extra @config.setting_password, "name" => "password"
+          builder.tag! "terminal-id", @config.setting_client
+          builder.auth do
+            builder.payment do
+              builder.tag! "transaction-number", Time.now.to_i
+              builder.to do
+                builder.amount payment.paid_amount
+                builder.tag! "service-id", 99
+                builder.tag! "account-number", payment.account
+              end
+            end
+          end
+        end
         begin
-          result = Nokogiri::XML addOfflinePayment(
-            payment.id,
-            643,
-            payment.paid_amount,
-            payment.enrolled_amount,
-            payment.gateway_provider_id,
-            payment.account,
-            payment.fields
-          )
-          code = Nokogiri::XML(result).css("response").first.attributes["result"].value.to_i rescue -1
+          result = send data
+          code = Nokogiri.XML(result).css("payment").
+            first.attributes["status"].value
         rescue Errno::ECONNRESET
           code = -1000
         end
 
-        retval(code)
+        retval(code, true)
       end
 
     private
 
-      def retval(code)
-        {:success => (code == "0"), :error => code}
+      def retval(code, payment=nil)
+        if payment
+          {:success => (code == "50"), :error => code}
+        else
+          {:success => (code == "0"), :error => code}
+        end
       end
 
-      def send(message)
-        message =
-            "<?xml version='1.0' encoding='windows-1251'?>
-            <request>
-              <auth login='#{@config.setting_client}' sign='#{Digest::MD5.hexdigest(@config.setting_password.to_s)}' signAlg='MD5'/>
-              <client terminal='#{@config.setting_terminal}' software='Dealer v0' serial='' timezone='GMT+03' />
-              #{message}
-            </request>"
-
-        url    = URI.parse(@config.setting_domain)
-        http   = Net::HTTP.new(url.host, url.port)
-        
-        
-        result = RestClient.post @config.setting_domain, message
-                
-        #result = http.post(url.path, message)
+      def send(data)
+        result = RestClient.post @config.setting_domain, data
 
         logger.debug(result.body) unless logger.blank?
         return result.body
       end
 
-      def checkPaymentRequisites(id, currency, paid_amount, enroll_amount, provider_id, account, fields = {})
-        send "
-          <providers>
-            <checkPaymentRequisites>
-              <payment id='#{id}'>
-                <from currency='#{currency}' amount='#{paid_amount}'/>
-                <to currency='#{currency}' service='#{provider_id}' amount='#{enroll_amount}' account='#{account}'/>
-                <receipt id='#{id}' date='#{DateTime.now}'/>
-              </payment>
-            </checkPaymentRequisites>
-          </providers>
-        "
-      end
-
-      def addOfflinePayment(id, currency, paid_amount, enroll_amount, provider_id, account, fields = {})
-        #fields = fields.map{|k,v| "#{k.to_s.gsub('_extra_', '')}='#{v}'"}.join(' ')
-
-        send "
-          <providers>
-            <addOfflinePayment>
-              <payment id='#{id}'>
-                <from currency='#{currency}' amount='#{paid_amount}'/>
-                <to currency='#{currency}' service='#{provider_id}' amount='#{enroll_amount}' account='#{account}'/>
-                <receipt id='#{id}' date='#{DateTime.now}'/>
-              </payment>
-            </addOfflinePayment>
-          </providers>
-        "
-      end
     end
   end
 end

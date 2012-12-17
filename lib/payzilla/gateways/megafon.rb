@@ -49,7 +49,7 @@ module Payzilla
 
         [:xml, data]
       end
-      
+
       def send_revision(revision, data)
         result = request 'HTTP_LOAD_REESTR', :post,
           :LOGIN     => @config.setting_client,
