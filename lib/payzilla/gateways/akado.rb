@@ -1,14 +1,17 @@
 # coding: utf-8
 
+require 'cgi'
+
 module Payzilla
   module Gateways
     class Akado < Gateway
-      register_settings %w(bank key_password)
+      include Payzilla::Transports::HTTP
+      register_settings %w(key_password bank)
       register_attachments %w(cert key ca)
 
       def check(payment)
-        begin 
-          result = send 'check_pay', 
+        begin
+          result = request 'check_pay',
             :numabo => payment.account
 
           return retval(result)
@@ -19,7 +22,7 @@ module Payzilla
 
       def pay(payment)
         begin
-          result = send 'pay',
+          result = request 'pay',
             :date   => payment.created_at,
             :id     => payment.id,
             :numabo => payment.account,
@@ -37,21 +40,18 @@ module Payzilla
         {:success => (code == "0"), :error => code}
       end
 
-      def send(operation, params)
+      def request(operation, params)
         params[:type] = operation
 
-        resource = RestClient::Resource.new(
-          "https://payment.comcor–tv.ru/#{@config.setting_bank}/payorder.php",
-          ssl_settings(
+        request = send :get, "https://payment.comcor-tv.ru/#{@config.setting_bank}/payorder.php", params,
+          ssl(
             @config.attachment_cert,
             @config.attachment_key,
             @config.setting_key_password,
             @config.attachment_ca
           )
-        )
 
-        result = resource.get :params => params
-        return result.to_s
+        return CGI.parse(request)["code"].first
       end
 
     end
