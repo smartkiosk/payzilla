@@ -80,7 +80,7 @@ module Payzilla
         result = sign.verify(result.to_s) do |sig|
           return {:RES_CD => "1", :ERR_CD => "Bad signature" } if sig.bad?
         end
-        result = result.split("\n").map{|x| x.split("=")}.flatten
+        result = result.to_s.split("\n").map{|x| x.split("=")}.flatten
         result = Hash[*result].with_indifferent_access
 
         return result
