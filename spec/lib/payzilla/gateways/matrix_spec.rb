@@ -18,16 +18,18 @@ describe Payzilla::Gateways::Matrix do
       :account            => 9260029939,
       :enrolled_amount    => 100,
       :created_at         => DateTime.now.strftime("%Y-%m-%d %H:%M:%S"),
-      :gateway_payment_id => 23456,
-      :id                 => 4356123
+      :id                 => Time.now.to_i/1000
     )
   end
 
   it "checks" do
-    @transport.check(@payment)[:success].should == true
+    result = @transport.check(@payment)
+    @payment_id = result[:gateway_payment_id]
+    result[:success].should == true
   end
 
   it "pays" do
+    @payment.gateway_payment_id = @payment_id
     @transport.pay(@payment)[:success].should == true
   end
 end
