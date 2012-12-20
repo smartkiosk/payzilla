@@ -5,12 +5,14 @@ require 'crack'
 module Payzilla
   module Gateways
     class Matrix < Gateway
-      register_settings %w(dealer_id key_password)
+      include Payzilla::Transports::HTTP
+
+      register_settings %w(dealer_id key_password url)
       register_attachments %w(cert key ca)
 
       def check(payment)
         begin 
-          result = send 'process_payment', 
+          result = send 'process_payment',
             :i_service_id => 2,
             :i_phone => payment.account,
             :i_pamount => payment.enrolled_amount,
@@ -46,8 +48,8 @@ module Payzilla
         params[:i_dealer_id] = @config.setting_dealer_id
 
         resource = RestClient::Resource.new(
-          "https://customer.matrixtelecom.ru:7777/pls/dp/ps$http_payments.#{operation}",
-          ssl_settings(
+          "#{@config.setting_url}#{operation}",
+          ssl(
             @config.attachment_cert,
             @config.attachment_key,
             @config.setting_key_password,

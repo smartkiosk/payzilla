@@ -6,6 +6,7 @@ describe Payzilla::Gateways::Matrix do
 
     config.setting_dealer_id    = 123
     config.setting_key_password = "qwer"
+    config.setting_url = "https://customer.matrixtelecom.ru:7778/pls/dp/ps$http_payments."
 
     config.attachment_cert = File.new("certificates/matrix.pem")
     config.attachment_key  = File.new("certificates/matrix.pem")
@@ -14,7 +15,7 @@ describe Payzilla::Gateways::Matrix do
     @transport = Payzilla::Gateways::Matrix.new(config, './log/matrix.log')
 
     @payment = OpenStruct.new(
-      :account            => 946848764,
+      :account            => 9260029939,
       :enrolled_amount    => 100,
       :created_at         => DateTime.now.strftime("%Y-%m-%d %H:%M:%S"),
       :gateway_payment_id => 23456,
