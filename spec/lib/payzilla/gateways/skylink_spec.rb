@@ -34,6 +34,6 @@ describe Payzilla::Gateways::Skylink do
   end
 
   it "revises" do
-    @transport.revise(@payments, DateTime.now)[:success].should == true
+    @transport.revise(@payments, Time.now - 86400)[:success].should == true
   end
 end

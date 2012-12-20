@@ -38,7 +38,7 @@ module Payzilla
             :Dsc => '1'
 
 
-          return retval(result, transaction)
+          return retval(result['string'].split(':').first, transaction) #retval(result, transaction)
         rescue Errno::ECONNRESET
           return retval(-1000)
         end
@@ -58,7 +58,7 @@ module Payzilla
           :RegDate => date.strftime("%d.%m.%Y"),
           :Register => data
 
-        return retval(result)
+        return retval(result['string'].split(':').first)
       end
 
     private
@@ -97,7 +97,6 @@ module Payzilla
          end
 
         params[:PaySystemCode] = @config.setting_client
-        
         result = RestClient.post "#{@config.setting_url}/#{operation}", params
         return Crack::XML.parse(result)
       end
