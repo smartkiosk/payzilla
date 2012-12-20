@@ -7,9 +7,9 @@ describe Payzilla::Gateways::Matrix do
     config.setting_dealer_id    = 123
     config.setting_key_password = "qwer"
 
-    config.attachment_cert = File.new("certificates/matrix.cer")
-    config.attachment_key  = File.new("certificates/matrix.key")
-    config.attachment_ca   = File.new("certificates/matrix.key")
+    config.attachment_cert = File.new("certificates/matrix.pem")
+    config.attachment_key  = File.new("certificates/matrix.pem")
+    config.attachment_ca   = File.new("certificates/matrix.pem")
 
     @transport = Payzilla::Gateways::Matrix.new(config, './log/matrix.log')
 
