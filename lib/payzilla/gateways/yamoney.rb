@@ -77,10 +77,12 @@ module Payzilla
 
         result = resource.post :params => params
         sign   = GPGME::Crypto.new(:armor => true)
-        result = sign.verify(result.to_s) do |sig|
-          return {:RES_CD => "1", :ERR_CD => "Bad signature" } if sig.bad?
+        params = sign.verify(result.to_s) do |sig|
+          result = {:RES_CD => "1", :ERR_CD => "Bad signature" } if sig.bad?
         end
-        result = result.to_s.split("\n").map{|x| x.split("=")}.flatten
+
+        return result if result.kind_of(Hash)
+        result = params.to_s.split("\n").map{|x| x.split("=")}.flatten
         result = Hash[*result].with_indifferent_access
 
         return result
