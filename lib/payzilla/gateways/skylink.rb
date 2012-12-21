@@ -28,7 +28,7 @@ module Payzilla
             :PayNum => transaction,
             :PurposeID => 2,
             :PurposeNum => payment.account,
-            :PaySum => payment.enrolled_amount,
+            :PaySum => (payment.enrolled_amount * 100).to_i,
             :PayDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
             :RegDate => payment.created_at.strftime("%d.%m.%Y %H:%M:%S"),
             :Payer => 'Tester',
@@ -66,7 +66,7 @@ module Payzilla
       def generate_revision_page(payments, builder)
         payments.each do |p|
           builder.payment(
-            :PaySum => p.enrolled_amount,
+            :PaySum => (p.enrolled_amount * 100).to_i,
             :PayType => 1,
             :PurposeID => 2,
             :PurposeNum => p.account,

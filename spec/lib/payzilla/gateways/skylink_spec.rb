@@ -11,8 +11,8 @@ describe Payzilla::Gateways::Skylink do
     @payments = @payments.map do |p|
       OpenStruct.new(
         :account => p,
-        :paid_amount => 1000,
-        :enrolled_amount => 1000,
+        :paid_amount => 100,
+        :enrolled_amount => 100,
         :created_at => DateTime.now,
         :id => 1
       )
