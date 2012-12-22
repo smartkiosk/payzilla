@@ -42,10 +42,10 @@ module Payzilla
     private
 
       def retval(result)
-        if result[:RES_CD] == "0"
+        if result["RES_CD"] == "0"
           return {:success => true, :error => "0"}
         else
-          return {:success => false, :error => result[:ERR_CD]}
+          return {:success => false, :error => result["ERR_CD"]}
         end
       end
 
@@ -78,12 +78,12 @@ module Payzilla
         result = resource.post :params => params
         sign   = GPGME::Crypto.new(:armor => true)
         params = sign.verify(result.to_s) do |sig|
-          result = {:RES_CD => "1", :ERR_CD => "Bad signature" } if sig.bad?
+          result = {"RES_CD" => "1", "ERR_CD" => "Bad signature" } if sig.bad?
         end
 
-        return result if result.kind_of(Hash)
+        return result if result.kind_of?(Hash)
         result = params.to_s.split("\n").map{|x| x.split("=")}.flatten
-        result = Hash[*result].with_indifferent_access
+        result = Hash[*result]
 
         return result
       end
