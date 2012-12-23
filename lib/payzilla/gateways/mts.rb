@@ -71,7 +71,7 @@ module Payzilla
 
 
           xml.f_01(payment.account, :"xsi:type" => 'espp-constraints:PHN_CODE_fmt_01')
-          xml.f_02("1.00")
+          xml.f_02(payment.enrolled_amount)
           xml.f_03(810, :"xsi:type" => 'espp-constraints:CUR_fmt_01')
           xml.f_04(7)
           xml.f_06(0)
