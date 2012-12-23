@@ -1,5 +1,6 @@
 require 'crack'
 require 'digest/md5'
+require 'base64'
 
 module Payzilla
   module Gateways
@@ -17,9 +18,9 @@ module Payzilla
           xml = Builder::XmlMarkup.new
 
           xml.f_01(payment.account, :"xsi:type" => 'espp-constraints:PHN_CODE_fmt_01')
-          xml.f_02(100.0)
+          xml.f_02(payment.enrolled_amount)
           xml.f_03(810, :"xsi:type" => 'espp-constraints:CUR_fmt_01')
-          xml.f_04(1)
+          xml.f_04(7)
           xml.f_05(terminal(payment))
           xml.f_06(1)
           xml.f_07(@config.setting_agent)
@@ -45,44 +46,47 @@ module Payzilla
           xml = Builder::XmlMarkup.new
 
           signature = [
-            payment.account,
-            payment.enrolled_amount,
+            "#{payment.account}",
+            "1.00",
             810,
-            1,
+            7,
+            "",
             payment.id,
-            payment.created_at,
+            payment.created_at.strftime("%Y-%m-%dT%H:%M:%S"),
             @config.setting_agent,
-            payment.terminal_id,
+            terminal(payment),
             1,
-            payment.created_at,
-            payment.gateway_provider_id
+            payment.created_at.to_s,
+            "",
+            "MTS"
           ].join('&')
 
-          signature = Digest::MD5.hexdigest(signature)
           encryptor = OpenSSL::PKey::RSA.new(
             File.open(@config.attachment_signature_key.path).read,
             @config.setting_signature_key_password
           )
-          signature = encryptor.sign(OpenSSL::Digest::SHA1.new, signature)
-          signature = Base64.encode64(signature)
+
+          signature = encryptor.sign(OpenSSL::Digest::MD5.new, signature)
+          signature = Base64.encode64(signature.force_encoding('UTF-8'))
+
 
           xml.f_01(payment.account, :"xsi:type" => 'espp-constraints:PHN_CODE_fmt_01')
-          xml.f_02(payment.enrolled_amount)
+          xml.f_02("1.00")
           xml.f_03(810, :"xsi:type" => 'espp-constraints:CUR_fmt_01')
-          xml.f_04(1)
-          xml.f_06(payment.id)
+          xml.f_04(7)
+          xml.f_06(0)
           xml.f_07(payment.id)
           xml.f_08(payment.created_at.strftime("%Y-%m-%dT%H:%M:%S"))
           xml.f_10(payment.gateway_payment_id)
           xml.f_11(@config.setting_agent)
           xml.f_12(terminal(payment))
           xml.f_13(1)
-          xml.f_16(payment.created_at)
+          xml.f_15("138020")
+          xml.f_16(payment.created_at.to_s)
           xml.f_18(signature)
           xml.f_19(@config.setting_contract)
           xml.f_21(payment.gateway_provider_id)
-
-          result = request 'ESPP_0104090', xml
+          result = request 'ESPP_0104090', xml.target!
 
           if !result['ESPP_1204090'].blank?
             return retval
@@ -166,13 +170,13 @@ module Payzilla
         operation_id = "id='#{operation_id}'" unless operation_id.blank?
 
         return <<-XML
-<?xml version= "1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <#{operation}
   #{operation_id}
   xmlns="http://schema.mts.ru/ESPP/AgentPayments/Protocol/Messages/v5_01"
   xmlns:espp-constraints="http://schema.mts.ru/ESPP/Core/Constraints/v5_01"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://schema.mts.ru/ESPP/AgentPayments/Protocol/Messages/v5_01 ESPP_AgentPayments_Protocol_Messages_v5_01.xsd" #{"a_01 = \"60\"" if operation == "ESPP_0104010"}>
+  xsi:schemaLocation="http://schema.mts.ru/ESPP/AgentPayments/Protocol/Messages/v5_01 ESPP_AgentPayments_Protocol_Messages_v5_01.xsd http://schema.mts.ru/ESPP/Core/Constraints/v5_01 ESPP_Core_Constraints_v5_01.xsd" #{"a_01 = \"60\"" if operation == "ESPP_0104010"}>
   #{xml}
 </#{operation}>
         XML
