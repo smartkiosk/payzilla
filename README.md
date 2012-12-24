@@ -1,6 +1,6 @@
 # Payzilla
 
-TODO: Write a gem description
+This gem is a set of gateways, that allows you easily send payments to carriers.
 
 ## Installation
 
@@ -18,7 +18,28 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+First of all you should define configuration of each of the carriers you will use
+
+    config = Payzilla::Config.new("carrier")
+    config.setting_domain   = "https://your-carrier.com/"
+    config.setting_password = "pass"
+    config.attachment_cert  = File.new("certificates/carrier.pem")
+
+Note, that all settings, such as domain name, password has appendix "setting\_", and all of attachments - "attachment\_". You can also export config from YAML file.
+Next step is to define payment, that you need to send. It could be done this way:
+
+    payment = Payzilla::Payment.new(
+      :id => 1,
+      :accound => 111111111,
+      :enrolled_amound => 100
+    )
+
+After this, you are able to send payment to the carrier, and here how can you do this:
+
+    transport = Payzilla::Gateways::Carrier.new(config, './log/carrier.log')
+    transport.check(payment)
+    transport.pay(payment)
+
 
 ## Contributing
 

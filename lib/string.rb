@@ -1,4 +1,7 @@
 String.class_eval do
+  # Changes case of the string into lowerCamelCase.
+  #
+  # @return [String] in lowerCamelCase style.
   def lower_camelcase
     str = dup
     str.gsub!(/\/(.?)/) { "::#{$1.upcase}" }
