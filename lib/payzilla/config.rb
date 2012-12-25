@@ -18,11 +18,18 @@ module Payzilla
 
     attr_accessor :switch_test_mode
 
-    def initialize(config={})
-      config = Yaml.load_file(config) if config.kind_of(String)
+    def initialize(carrier, config={})
+      config = if config.kind_of?(Hash)
+                 {carrier => config}
+               else
+                 ::YAML.load_file(config)
+               end
 
-      config.each do |carier|
-        carier.each{|k,v| send "#{k}=", v}
+      begin
+        config[carrier].each{|k,v| send "#{k}=", v}
+      rescue NoMethodError => e
+        puts "No such carrier in yaml config file"
+        puts e
       end
     end
   end
