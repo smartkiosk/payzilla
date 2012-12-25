@@ -18,36 +18,64 @@ Or install it yourself as:
 
 ## Usage
 
-First of all you should define configuration of each of the carriers you will use
+To use Payzilla, you should have config, payment and gateway instances. Config can be defined with YAML, or just by passing arguments to the contructor. Payment, which you need to send, can be defined only by passing arguments to the constructor. Sending payment should comprise two steps: check and pay, and the second one should be sent only after successfull check. 
 
-    config = Payzilla::Config.new("carrier")
-    config.setting_domain   = "https://your-carrier.com/"
-    config.setting_password = "pass"
-    config.attachment_cert  = File.new("certificates/carrier.pem")
+```ruby
+    # Create config instance
+    config = Payzilla::Config.new("dummy", File.new("config.yaml"))
 
-Note, that all settings, such as domain name, password has appendix "setting\_", and all of attachments - "attachment\_". You can also export config from YAML file.
-Next step is to define payment, that you need to send. It could be done this way:
+    # Load attachments
+    config.attachment_cert  = File.new("certificates/dummy.cer")
+    config.attachment_key   = File.new("certificates/dummy.key")
 
+    # Define payment, that you need to send
     payment = Payzilla::Payment.new(
       :id => 1,
       :accound => 111111111,
       :enrolled_amound => 100
     )
 
-After this, you are able to send payment to the carrier, and here how can you do this:
+    # Check'n'Pay
+    transport = Payzilla::Gateways::Dummy.new(config, './log/dummy.log')
+    if transport.check(payment)[:success]
+      transport.pay(payment)
+    end
+```
 
-    transport = Payzilla::Gateways::Carrier.new(config, './log/carrier.log')
-    transport.check(payment)
-    transport.pay(payment)
+```yaml
+# config.yaml
+dummy:
+    setting_url:      "https://dummy.com/gateway"
+    setting_client:   "JDoe"
+    setting_contract: "123456789"
+    setting_password: "1234"
+```
 
+## Gateways status
+* Akado _working_
+* Beeline _testing_
+* Cyberplat _testing_
+* Mailru _testing_
+* Matrix _testing_
+* Megafon _working_
+* MTS _testing_
+* Rapida _MRI only_
+* Skylink _testing_
+* Webmoney _not working_
+* Yamoney _testing_
+* Yota _not working_
 
-## Contributing
+## Credits
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+<img src="http://roundlake.ru/assets/logo.png" align="right" />
+
+* Boris Staal ([@_inossidabile](http://twitter.com/#!/_inossidabile))
+* Vasilij Melnychuk ([@sqrel](http://twitter.com/#!/sqrel))
+
+## Contributors
+
+* Byteg ([@bypeg](https://github.com/byteg))
+* Alexander Pavlenko ([@AlexanderPavlenko](https://github.com/AlexanderPavlenko))
 
 ## LICENSE
 
