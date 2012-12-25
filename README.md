@@ -48,3 +48,7 @@ After this, you are able to send payment to the carrier, and here how can you do
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## LICENSE
+
+It is free software, and may be redistributed under the terms of MIT license.
