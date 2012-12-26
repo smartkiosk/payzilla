@@ -15,7 +15,7 @@ describe Payzilla::Gateways::Yamoney do
     @transport = Payzilla::Gateways::Yamoney.new(config, './log/yamoney.log')
 
     @payment = OpenStruct.new(
-      :id              => 123,
+      :id              => Time.now.to_i.to_s,
       :account         => 4100175017397,
       :enrolled_amount => 100.25
     )

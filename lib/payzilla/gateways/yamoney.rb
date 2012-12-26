@@ -10,12 +10,13 @@ module Payzilla
 
       def check(payment)
         begin
-          result = send '1002',
-            :TR_NR      => payment.id,
-            :DSTACNT_NR => payment.account,
-            :TR_AMT     => payment.enrolled_amount,
-            :CUR_CD     => @config.setting_currency,
-            :SIGN       => sign([payment.id, 1002, payment.account, payment.enrolled_amount, @config.setting_currency])
+          result = send :VERSION    => '2.02',
+                        :TR_NR      => payment.id,
+                        :DSTACNT_NR => payment.account,
+                        :TR_AMT     => payment.enrolled_amount,
+                        :CUR_CD     => @config.setting_currency,
+                        :ACT_CD     => 1002,
+                        :SIGN       => sign([payment.id, 1002, payment.account, payment.enrolled_amount, @config.setting_currency])
 
           return retval(result)
         rescue Errno::ECONNRESET
@@ -25,13 +26,14 @@ module Payzilla
 
       def pay(payment)
         begin
-          result = send '1',
-            :TR_NR      => payment.id,
-            :DSTACNT_NR => payment.account,
-            :TR_AMT     => payment.enrolled_amount,
-            :CUR_CD     => @config.setting_currency,
-            :CONT       => "Пополнение кошелька".encode("Windows-1251"),
-            :SIGN       => sign([payment.id, 1002, payment.account, payment.enrolled_amount, @config.setting_currency])
+          result = send :VERSION    => '2.02',
+                        :TR_NR      => payment.id,
+                        :DSTACNT_NR => payment.account,
+                        :TR_AMT     => payment.enrolled_amount,
+                        :CUR_CD     => @config.setting_currency,
+                        :ACT_CD     => 1,
+                        :CONT       => "Пополнение кошелька".encode("Windows-1251"),
+                        :SIGN       => sign([payment.id, 1002, payment.account, payment.enrolled_amount, @config.setting_currency])
 
           return retval(result)
         rescue Errno::ECONNRESET
@@ -42,10 +44,10 @@ module Payzilla
     private
 
       def retval(result)
-        if result["RES_CD"] == "0"
+        if result["RES_CD"].strip == "0"
           return {:success => true, :error => "0"}
         else
-          return {:success => false, :error => result["ERR_CD"]}
+          return {:success => false, :error => result["ERR_CD"].strip}
         end
       end
 
@@ -69,10 +71,7 @@ module Payzilla
         end
       end
 
-      def send(operation, params)
-        params[:ACT_CD] = operation
-        params[:VERSION] = '2.02'
-
+      def send(params)
         resource = RestClient::Resource.new(@config.setting_url)
 
         result = resource.post :params => params
