@@ -47,7 +47,7 @@ module Payzilla
 
           signature = [
             "#{payment.account}",
-            "1.00",
+            payment.enrolled_amount,
             810,
             7,
             "",

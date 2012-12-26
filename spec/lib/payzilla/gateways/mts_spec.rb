@@ -27,7 +27,7 @@ describe Payzilla::Gateways::Mts do
         :id => Time.now.to_i+i,
         :account => x,
         :created_at => @date,
-        :enrolled_amount => 100.0,
+        :enrolled_amount => "100.00",
         :terminal_id => 1,
         :gateway_provider_id => 'MTS'
       )
@@ -48,8 +48,8 @@ describe Payzilla::Gateways::Mts do
      end
   end
 
-  xit "generates revision" do
+  it "generates revision" do
     data = Crack::XML.parse(@transport.generate_revision(@revision)[1])
-    data['comparePacket']['summary']['totalAmountOfPayments'].should == "2"
+    data['comparePacket']['summary']['totalAmountOfPayments'].should == "23"
   end
 end
