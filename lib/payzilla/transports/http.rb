@@ -30,10 +30,10 @@ module Payzilla
       # @param [Hash] params data, which would be sent
       # @param [Hash] attributes additional attributes such as ssl certificate and keys
       # @return [String] server response
-      def post(url, params, attributes={})
+      def post(url, params, attributes={}, headers={})
         logger.info "POST #{url}: #{params.inspect}" unless logger.blank?
         logger.debug attributes.inspect unless logger.blank?
-        resource(url, attributes).post(params).to_s
+        resource(url, attributes).post(params, headers).to_s
       end
 
       # Prepare SSL data to be sent

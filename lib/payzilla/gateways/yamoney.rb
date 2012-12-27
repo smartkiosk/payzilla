@@ -73,8 +73,9 @@ module Payzilla
 
       def send(params)
         resource = RestClient::Resource.new(@config.setting_url)
+        headers = { :content_type => "application/x-www-form-urlencoded" }
 
-        result = resource.post :params => params
+        result = resource.post params, headers
         sign   = GPGME::Crypto.new(:armor => true)
         params = sign.verify(result.to_s) do |sig|
           result = {"RES_CD" => "1", "ERR_CD" => "Bad signature" } if sig.bad?
