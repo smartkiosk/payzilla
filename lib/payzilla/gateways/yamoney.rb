@@ -32,7 +32,7 @@ module Payzilla
                         :TR_AMT     => payment.enrolled_amount,
                         :CUR_CD     => @config.setting_currency,
                         :ACT_CD     => 1,
-                        :CONT       => "Пополнение кошелька".encode("Windows-1251"),
+                        :CONT       => "Пополнение кошелька".force_encoding("Windows-1251"),
                         :SIGN       => sign([payment.id, 1002, payment.account, payment.enrolled_amount, @config.setting_currency])
 
           return retval(result)
@@ -73,7 +73,7 @@ module Payzilla
 
       def send(params)
         resource = RestClient::Resource.new(@config.setting_url)
-        headers = { :content_type => "application/x-www-form-urlencoded" }
+        headers = { :content_type => "application/x-www-form-urlencoded;charset=Windows-1251" }
 
         result = resource.post params, headers
         sign   = GPGME::Crypto.new(:armor => true)
