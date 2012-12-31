@@ -26,7 +26,7 @@ module Payzilla
             :date   => payment.created_at,
             :id     => payment.id,
             :numabo => payment.account,
-            :summ   => payment.enrolled_amount
+            :summ   => "%.2f" % payment.enrolled_amount
 
           return retval(result)
         rescue Errno::ECONNRESET

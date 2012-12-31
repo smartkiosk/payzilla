@@ -18,7 +18,7 @@ module Payzilla
           xml = Builder::XmlMarkup.new
 
           xml.f_01(payment.account, :"xsi:type" => 'espp-constraints:PHN_CODE_fmt_01')
-          xml.f_02(payment.enrolled_amount)
+          xml.f_02("%.2f" % payment.enrolled_amount)
           xml.f_03(810, :"xsi:type" => 'espp-constraints:CUR_fmt_01')
           xml.f_04(7)
           xml.f_05(terminal(payment))
@@ -47,7 +47,7 @@ module Payzilla
 
           signature = [
             "#{payment.account}",
-            payment.enrolled_amount,
+            "%.2f" % payment.enrolled_amount,
             810,
             7,
             "",
@@ -71,7 +71,7 @@ module Payzilla
 
 
           xml.f_01(payment.account, :"xsi:type" => 'espp-constraints:PHN_CODE_fmt_01')
-          xml.f_02(payment.enrolled_amount)
+          xml.f_02("%.2f" % payment.enrolled_amount)
           xml.f_03(810, :"xsi:type" => 'espp-constraints:CUR_fmt_01')
           xml.f_04(7)
           xml.f_06(0)
@@ -130,7 +130,7 @@ module Payzilla
               p.account,
               '',
               '',
-              p.enrolled_amount,
+              "%.2f" % p.enrolled_amount,
               810,
               1,
               0

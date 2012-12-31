@@ -27,7 +27,7 @@ describe Payzilla::Gateways::Mts do
         :id => Time.now.to_i+i,
         :account => x,
         :created_at => @date,
-        :enrolled_amount => "100.00",
+        :enrolled_amount => 100,
         :terminal_id => 1,
         :gateway_provider_id => 'MTS'
       )
