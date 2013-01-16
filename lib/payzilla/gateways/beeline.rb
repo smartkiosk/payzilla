@@ -149,8 +149,8 @@ module Payzilla
 
       def sign_request(text)
         cryptcp = "#{Dir.pwd}/bin/cryptcp"
-        out_txt = "#{Dir.pwd}/certificats/beeline_out.txt"
-        out_msg = "#{Dir.pwd}/certificats/beeline_out.msg"
+        out_txt = "#{Dir.pwd}/certificates/beeline_out.txt"
+        out_msg = "#{Dir.pwd}/certificates/beeline_out.msg"
 
         begin
           system("#{cryptcp} -sign -f #{@config.attachment_cert.path} \
