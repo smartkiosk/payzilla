@@ -42,7 +42,7 @@ describe Payzilla::Gateways::Beeline do
   it "generates revision" do
     data = @transport.generate_revision(@revision)[1]
 
-    data['reconciliationRequest']['partnerId'].should == '939'
+    data[:reconciliationRequest][:partnerId].should == '939'
   end
 
   it "revises" do
