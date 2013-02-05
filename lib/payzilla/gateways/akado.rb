@@ -51,7 +51,7 @@ module Payzilla
             @config.attachment_ca
           )
 
-        logger.debug(result) unless logger.blank?
+        logger.debug(request) unless logger.blank?
         return CGI.parse(request)["code"].first
       end
 
