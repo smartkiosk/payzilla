@@ -15,7 +15,7 @@ describe Payzilla::Gateways::Akado do
 
     @payment = OpenStruct.new(
       :account         => "30000051",
-      :created_at      => DateTime.now.strftime("%Y-%m-%d %H:%M:%S"),
+      :created_at      => DateTime.now,
       :id              => rand(1000),
       :enrolled_amount => 100
     )

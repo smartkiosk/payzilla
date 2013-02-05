@@ -23,7 +23,7 @@ module Payzilla
       def pay(payment)
         begin
           result = request 'pay',
-            :date   => payment.created_at,
+            :date   => payment.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             :id     => payment.id,
             :numabo => payment.account,
             :summ   => "%.2f" % payment.enrolled_amount
@@ -51,6 +51,7 @@ module Payzilla
             @config.attachment_ca
           )
 
+        logger.debug(result) unless logger.blank?
         return CGI.parse(request)["code"].first
       end
 
